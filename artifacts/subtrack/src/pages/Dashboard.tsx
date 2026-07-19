@@ -14,7 +14,7 @@ import { ArrowRight, CreditCard, DollarSign, Calendar, Activity, TrendingUp } fr
 import { cn } from "@/lib/utils";
 import SubscriptionLogo from "@/components/subscriptions/SubscriptionLogo";
 
-function formatCurrency(amount: number, currency: string = 'USD') {
+function formatCurrency(amount: number, currency: string = 'INR') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
 

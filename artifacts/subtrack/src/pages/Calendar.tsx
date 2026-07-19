@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-function formatCurrency(amount: number, currency: string = "USD") {
+function formatCurrency(amount: number, currency: string = "INR") {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
 }
 

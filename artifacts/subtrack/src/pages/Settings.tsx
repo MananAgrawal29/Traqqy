@@ -27,14 +27,14 @@ export default function Settings() {
   const { setTheme: setAppTheme, theme: appTheme } = useTheme();
 
   const [displayName, setDisplayName] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("INR");
   const [theme, setTheme] = useState<UserSettingsUpdateTheme>("system");
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (settings) {
       setDisplayName(settings.displayName || "");
-      setCurrency(settings.currency || "USD");
+      setCurrency(settings.currency || "INR");
       setTheme(settings.theme as UserSettingsUpdateTheme);
     }
   }, [settings]);

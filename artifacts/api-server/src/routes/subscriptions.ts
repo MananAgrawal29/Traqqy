@@ -78,7 +78,7 @@ router.post("/", requireAuth, async (req, res) => {
       icon: icon || null,
       categoryId: categoryId || null,
       price: price.toString(),
-      currency: currency || "USD",
+      currency: currency || "INR",
       billingCycle,
       renewalDate,
       paymentMethod: paymentMethod || null,

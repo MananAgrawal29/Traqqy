@@ -22,7 +22,7 @@ import {
   AreaChart,
 } from "recharts";
 
-function formatCurrency(amount: number, currency: string = "USD") {
+function formatCurrency(amount: number, currency: string = "INR") {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
