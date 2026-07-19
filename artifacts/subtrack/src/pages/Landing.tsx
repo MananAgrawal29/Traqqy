@@ -8,7 +8,7 @@ export default function Landing() {
       <header className="px-6 h-16 flex items-center justify-between border-b">
         <div className="flex items-center gap-2">
           <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.svg`} alt="SubTrack" className="h-8 w-8" />
-          <span className="font-bold text-xl tracking-tight">SubTrack</span>
+          <span className="font-bold text-xl tracking-tight">Traqqy</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/sign-in" className="text-sm font-medium hover:text-primary transition-colors">
