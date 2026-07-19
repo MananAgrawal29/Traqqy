@@ -34,8 +34,8 @@ export function Sidebar({ className }: { className?: string }) {
     <div className="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="p-6">
         <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
-          <img src={`${basePath}/logo.svg`} alt="SubTrack" className="h-8 w-8" />
-          <span>SubTrack</span>
+          <img src={`${basePath}/logo.svg`} alt="Traqqy" className="h-8 w-8" />
+          <span>Traqqy</span>
         </Link>
       </div>
 
