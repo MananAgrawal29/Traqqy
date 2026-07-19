@@ -10,7 +10,7 @@ import type { SubscriptionInputBillingCycle } from './subscriptionInputBillingCy
 export interface SubscriptionInput {
   /** @minLength 1 */
   name: string;
-  logoUrl?: string;
+  icon?: string;
   categoryId?: number;
   /** @minimum 0 */
   price: number;

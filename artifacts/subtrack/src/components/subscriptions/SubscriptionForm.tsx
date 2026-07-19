@@ -24,12 +24,13 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 import CurrencySelect from "./CurrencySelect";
-import CatalogPicker, { LogoImage } from "./CatalogPicker";
+import CatalogPicker from "./CatalogPicker";
+import SubscriptionLogo from "./SubscriptionLogo";
 import { catalog, type CatalogEntry } from "@/data/catalog";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  icon: z.string().optional().or(z.literal("")),
   categoryId: z.coerce.number().optional().nullable(),
   price: z.coerce.number().min(0, "Price must be positive"),
   currency: z.string().min(1),
@@ -65,7 +66,7 @@ export default function SubscriptionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      logoUrl: "",
+      icon: "",
       categoryId: undefined,
       price: 0,
       currency: "USD",
@@ -82,7 +83,7 @@ export default function SubscriptionForm({
       if (subscription) {
         form.reset({
           name: subscription.name,
-          logoUrl: subscription.logoUrl || "",
+          icon: subscription.icon || "",
           categoryId: subscription.categoryId,
           price: subscription.price,
           currency: subscription.currency,
@@ -99,7 +100,7 @@ export default function SubscriptionForm({
       } else {
         form.reset({
           name: "",
-          logoUrl: "",
+          icon: "",
           categoryId: undefined,
           price: 0,
           currency: "USD",
@@ -118,7 +119,7 @@ export default function SubscriptionForm({
   const handleCatalogSelect = (entry: CatalogEntry) => {
     setSelectedCatalogEntry(entry);
     form.setValue("name", entry.name);
-    form.setValue("logoUrl", entry.logoUrl);
+    form.setValue("icon", entry.icon);
     form.setValue("billingCycle", entry.defaultBillingCycle as any);
     
     // Match category by name
@@ -179,7 +180,7 @@ export default function SubscriptionForm({
           <div className="mb-6">
             {selectedCatalogEntry ? (
               <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50">
-                <LogoImage logoUrl={selectedCatalogEntry.logoUrl} name={selectedCatalogEntry.name} size="sm" />
+                <SubscriptionLogo icon={selectedCatalogEntry.icon} name={selectedCatalogEntry.name} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">{selectedCatalogEntry.name}</p>
                   <p className="text-xs text-muted-foreground">{selectedCatalogEntry.category}</p>
@@ -187,7 +188,7 @@ export default function SubscriptionForm({
                 <Button type="button" variant="ghost" size="sm" onClick={() => { 
                   setSelectedCatalogEntry(null); 
                   form.setValue("name", ""); 
-                  form.setValue("logoUrl", ""); 
+                  form.setValue("icon", ""); 
                 }}>
                   Change
                 </Button>
@@ -327,12 +328,12 @@ export default function SubscriptionForm({
 
               <FormField
                 control={form.control}
-                name="logoUrl"
+                name="icon"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Logo URL</FormLabel>
+                    <FormLabel>Icon Slug</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/logo.png" {...field} value={field.value || ""} />
+                      <Input placeholder="simple-icons slug, e.g. netflix" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

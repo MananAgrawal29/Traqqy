@@ -64,7 +64,7 @@ router.get("/", requireAuth, async (req, res) => {
 
 router.post("/", requireAuth, async (req, res) => {
   const userId = getUserId(req);
-  const { name, logoUrl, categoryId, price, currency, billingCycle, renewalDate, paymentMethod, notes, isActive } = req.body;
+  const { name, icon, categoryId, price, currency, billingCycle, renewalDate, paymentMethod, notes, isActive } = req.body;
 
   if (!name || price === undefined || !billingCycle || !renewalDate) {
     res.status(400).json({ error: "name, price, billingCycle, and renewalDate are required" });
@@ -75,7 +75,7 @@ router.post("/", requireAuth, async (req, res) => {
     const [sub] = await db.insert(subscriptionsTable).values({
       clerkId: userId,
       name,
-      logoUrl: logoUrl || null,
+      icon: icon || null,
       categoryId: categoryId || null,
       price: price.toString(),
       currency: currency || "USD",
@@ -118,12 +118,12 @@ router.get("/:id", requireAuth, async (req, res) => {
 router.patch("/:id", requireAuth, async (req, res) => {
   const userId = getUserId(req);
   const id = parseInt(req.params["id"] as string);
-  const { name, logoUrl, categoryId, price, currency, billingCycle, renewalDate, paymentMethod, notes, isActive } = req.body;
+  const { name, icon, categoryId, price, currency, billingCycle, renewalDate, paymentMethod, notes, isActive } = req.body;
 
   try {
     const updates: Record<string, any> = {};
     if (name !== undefined)          updates.name = name;
-    if (logoUrl !== undefined)       updates.logoUrl = logoUrl;
+    if (icon !== undefined)          updates.icon = icon;
     if (categoryId !== undefined)    updates.categoryId = categoryId;
     if (price !== undefined)         updates.price = price.toString();
     if (currency !== undefined)      updates.currency = currency;

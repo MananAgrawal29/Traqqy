@@ -25,7 +25,7 @@ export interface Subscription {
   userId: string;
   name: string;
   /** @nullable */
-  logoUrl?: string | null;
+  icon?: string | null;
   /** @nullable */
   categoryId?: number | null;
   /** @nullable */
@@ -68,7 +68,7 @@ export const SubscriptionInputBillingCycle = {
 export interface SubscriptionInput {
   /** @minLength 1 */
   name: string;
-  logoUrl?: string;
+  icon?: string;
   categoryId?: number;
   /** @minimum 0 */
   price: number;
@@ -96,7 +96,7 @@ export interface SubscriptionUpdate {
   /** @minLength 1 */
   name?: string;
   /** @nullable */
-  logoUrl?: string | null;
+  icon?: string | null;
   /** @nullable */
   categoryId?: number | null;
   /** @minimum 0 */

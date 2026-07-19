@@ -7,7 +7,7 @@ export const subscriptionsTable = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
   clerkId: text("clerk_id").notNull(),
   name: text("name").notNull(),
-  logoUrl: text("logo_url"),
+  icon: text("icon"),
   categoryId: integer("category_id").references(() => categoriesTable.id, { onDelete: "set null" }),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),

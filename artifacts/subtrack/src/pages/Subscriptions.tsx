@@ -27,26 +27,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import SubscriptionForm from "@/components/subscriptions/SubscriptionForm";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { stringToColor } from "@/components/subscriptions/CatalogPicker";
 import { formatAmount } from "@/data/currencies";
-
-function LogoDisplay({ logoUrl, name, size = "md" }: { logoUrl?: string; name: string; size?: "sm" | "md" }) {
-  const [failed, setFailed] = React.useState(false);
-  const dim = size === "sm" ? "h-9 w-9" : "h-12 w-12";
-  if (logoUrl && !failed) {
-    return (
-      <div className={`${dim} rounded-xl border bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden`}>
-        <img src={logoUrl} alt={name} onError={() => setFailed(true)} className="max-h-full max-w-full object-contain" />
-      </div>
-    );
-  }
-  return (
-    <div className={`${dim} rounded-xl flex items-center justify-center shrink-0 font-bold text-white`}
-      style={{ backgroundColor: stringToColor(name) }}>
-      {name.charAt(0).toUpperCase()}
-    </div>
-  );
-}
+import SubscriptionLogo from "@/components/subscriptions/SubscriptionLogo";
 
 type SortOption = "name-asc" | "name-desc" | "price-desc" | "price-asc" | "renewal" | "recent";
 
@@ -312,7 +294,7 @@ export default function Subscriptions() {
               <CardContent className="p-5 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex gap-3 items-center min-w-0">
-                    <LogoDisplay logoUrl={sub.logoUrl ?? undefined} name={sub.name} />
+                    <SubscriptionLogo icon={sub.icon} name={sub.name} size="md" />
                     <div className="min-w-0 flex-1">
                       <h3 className="font-semibold text-lg leading-tight truncate">{sub.name}</h3>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { ArrowRight, CreditCard, DollarSign, Calendar, Activity, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SubscriptionLogo from "@/components/subscriptions/SubscriptionLogo";
 
 function formatCurrency(amount: number, currency: string = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
@@ -142,15 +143,7 @@ export default function Dashboard() {
                 renewals.map(sub => (
                   <div key={sub.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                     <div className="flex items-center gap-4">
-                      {sub.logoUrl ? (
-                        <div className="h-10 w-10 rounded-md border flex items-center justify-center bg-white overflow-hidden shrink-0">
-                          <img src={sub.logoUrl} alt={sub.name} className="h-6 w-6 object-contain" />
-                        </div>
-                      ) : (
-                        <div className="h-10 w-10 rounded-md border flex items-center justify-center bg-slate-50 shrink-0">
-                          <CreditCard className="h-5 w-5 text-slate-400" />
-                        </div>
-                      )}
+                      <SubscriptionLogo icon={sub.icon} name={sub.name} size="md" />
                       <div>
                         <p className="text-sm font-medium">{sub.name}</p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">

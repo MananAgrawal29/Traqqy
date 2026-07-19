@@ -566,7 +566,7 @@ components:
           type: string
         name:
           type: string
-        logoUrl:
+        icon:
           type: ["string", "null"]
         categoryId:
           type: ["integer", "null"]
@@ -611,7 +611,7 @@ components:
         name:
           type: string
           minLength: 1
-        logoUrl:
+        icon:
           type: string
         categoryId:
           type: integer
@@ -641,7 +641,7 @@ components:
         name:
           type: string
           minLength: 1
-        logoUrl:
+        icon:
           type: ["string", "null"]
         categoryId:
           type: ["integer", "null"]

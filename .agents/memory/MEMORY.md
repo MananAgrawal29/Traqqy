@@ -1,0 +1,2 @@
+- [Simple Icons logo strategy](simple-icons-logo-strategy.md) — CDN-based Simple Icons SVGs with cached parsing and letter-avatar fallback.
+- [Non-TTY Drizzle column rename](db-column-rename.md) — Use direct SQL migration script when drizzle-kit push cannot prompt.

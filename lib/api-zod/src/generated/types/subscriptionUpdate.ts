@@ -11,7 +11,7 @@ export interface SubscriptionUpdate {
   /** @minLength 1 */
   name?: string;
   /** @nullable */
-  logoUrl?: string | null;
+  icon?: string | null;
   /** @nullable */
   categoryId?: number | null;
   /** @minimum 0 */

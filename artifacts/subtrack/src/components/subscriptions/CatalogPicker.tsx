@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { catalog, CATALOG_CATEGORIES, type CatalogEntry, type CatalogCategory } from "@/data/catalog";
+import SubscriptionLogo from "./SubscriptionLogo";
 
 export function stringToColor(str: string) {
   let hash = 0;
@@ -13,25 +14,6 @@ export function stringToColor(str: string) {
   }
   const h = Math.abs(hash) % 360;
   return `hsl(${h}, 70%, 40%)`;
-}
-
-export function LogoImage({ logoUrl, name, size = "md" }: { logoUrl?: string; name: string; size?: "sm" | "md" }) {
-  const [failed, setFailed] = React.useState(false);
-  const dim = size === "sm" ? "w-10 h-10" : "w-12 h-12";
-  const rounded = size === "sm" ? "rounded-lg" : "rounded-xl";
-  
-  if (logoUrl && !failed) {
-    return (
-      <img src={logoUrl} alt={name} onError={() => setFailed(true)}
-        className={cn(dim, rounded, "object-contain bg-white p-1 border border-border shrink-0")} />
-    );
-  }
-  return (
-    <div className={cn(dim, rounded, "flex items-center justify-center font-bold text-white shrink-0 border border-border")}
-      style={{ backgroundColor: stringToColor(name) }}>
-      {name.charAt(0).toUpperCase()}
-    </div>
-  );
 }
 
 interface Props {
@@ -98,7 +80,7 @@ export default function CatalogPicker({ open, onOpenChange, onSelect }: Props) {
                       onClick={() => onSelect(entry)}
                       className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl cursor-pointer hover:bg-accent transition-colors text-center border border-transparent hover:border-border"
                     >
-                      <LogoImage logoUrl={entry.logoUrl} name={entry.name} size="sm" />
+                      <SubscriptionLogo icon={entry.icon} name={entry.name} size="sm" />
                       <span className="text-xs font-medium truncate w-full px-1">{entry.name}</span>
                     </div>
                   ))}
@@ -138,7 +120,7 @@ export default function CatalogPicker({ open, onOpenChange, onSelect }: Props) {
                         onClick={() => onSelect(entry)}
                         className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl cursor-pointer hover:bg-accent transition-colors text-center border border-transparent hover:border-border"
                       >
-                        <LogoImage logoUrl={entry.logoUrl} name={entry.name} size="sm" />
+                        <SubscriptionLogo icon={entry.icon} name={entry.name} size="sm" />
                         <span className="text-xs font-medium truncate w-full px-1">{entry.name}</span>
                       </div>
                     ))}
@@ -156,7 +138,7 @@ export default function CatalogPicker({ open, onOpenChange, onSelect }: Props) {
                       onClick={() => onSelect(entry)}
                       className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl cursor-pointer hover:bg-accent transition-colors text-center border border-transparent hover:border-border"
                     >
-                      <LogoImage logoUrl={entry.logoUrl} name={entry.name} size="sm" />
+                      <SubscriptionLogo icon={entry.icon} name={entry.name} size="sm" />
                       <span className="text-xs font-medium truncate w-full px-1">{entry.name}</span>
                     </div>
                   ))}

@@ -12,7 +12,7 @@ export interface Subscription {
   userId: string;
   name: string;
   /** @nullable */
-  logoUrl?: string | null;
+  icon?: string | null;
   /** @nullable */
   categoryId?: number | null;
   /** @nullable */
