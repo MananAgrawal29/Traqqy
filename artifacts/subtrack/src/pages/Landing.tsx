@@ -37,8 +37,8 @@ export default function Landing() {
           <div className="mt-20 w-full rounded-xl border bg-card p-2 shadow-2xl relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
             <img 
-              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop" 
-              alt="Dashboard Preview" 
+              src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/hero-dashboard.jpg`}
+              alt="Traqqy Dashboard Preview" 
               className="w-full h-auto rounded-lg border object-cover object-top opacity-90 shadow-sm"
               style={{ maxHeight: '400px' }}
             />
