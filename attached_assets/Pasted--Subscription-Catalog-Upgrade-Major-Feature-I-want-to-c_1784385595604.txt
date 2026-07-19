@@ -1,0 +1,502 @@
+# Subscription Catalog Upgrade (Major Feature)
+
+I want to completely redesign the subscription creation experience to make it feel like a professional SaaS application.
+
+This is a feature update to the existing project.
+
+## IMPORTANT
+
+Do NOT rewrite the whole application.
+
+Only improve and extend the existing codebase.
+
+Keep the existing UI style and architecture.
+
+Refactor only where necessary.
+
+---
+
+# Goal
+
+The current app requires users to manually type the subscription name.
+
+I DO NOT want that.
+
+I want a built-in subscription catalog similar to Spotify, Apple Wallet or Google Pay.
+
+The user should simply search and select a subscription.
+
+---
+
+# Built-in Subscription Catalog
+
+Create a built-in catalog containing **500+ popular subscription services**.
+
+Do NOT hardcode these inside components.
+
+Store them in a dedicated file or database seed.
+
+For every subscription store:
+
+* id
+* name
+* category
+* logo
+* default billing cycle (if known)
+* official website (optional)
+* popular (boolean)
+
+Example
+
+Netflix
+
+Spotify
+
+Disney+
+
+Amazon Prime
+
+Amazon Prime Video
+
+YouTube Premium
+
+Apple Music
+
+YouTube Music
+
+Tidal
+
+Deezer
+
+ChatGPT Plus
+
+Claude Pro
+
+Gemini Advanced
+
+Perplexity Pro
+
+GitHub Copilot
+
+Cursor Pro
+
+Notion AI
+
+Midjourney
+
+Runway
+
+ElevenLabs
+
+Adobe Creative Cloud
+
+Figma
+
+Canva Pro
+
+Microsoft 365
+
+Google One
+
+Dropbox
+
+OneDrive
+
+Slack
+
+Zoom
+
+Notion
+
+Todoist
+
+Evernote
+
+Discord Nitro
+
+Xbox Game Pass
+
+PlayStation Plus
+
+Nintendo Switch Online
+
+EA Play
+
+Ubisoft+
+
+GeForce NOW
+
+iCloud+
+
+MEGA
+
+Coursera Plus
+
+Brilliant
+
+Duolingo Super
+
+Codecademy Pro
+
+DigitalOcean
+
+Railway
+
+Render
+
+Vercel
+
+Supabase
+
+Neon
+
+MongoDB Atlas
+
+PlanetScale
+
+Cloudflare
+
+GitHub Pro
+
+GitLab Premium
+
+Bitwarden Premium
+
+NordVPN
+
+ExpressVPN
+
+Proton Unlimited
+
+and continue expanding until the catalog contains at least 500 real-world services.
+
+---
+
+# Logos
+
+Every subscription should display its official logo.
+
+Examples
+
+Spotify → Spotify logo
+
+Netflix → Netflix logo
+
+Discord → Discord logo
+
+GitHub → GitHub logo
+
+Adobe → Adobe logo
+
+Google One → Google logo
+
+Microsoft 365 → Microsoft logo
+
+Use high-quality SVG logos.
+
+If a logo cannot be found,
+
+generate a colored circular placeholder containing the first letter.
+
+Never leave the logo blank.
+
+---
+
+# Add Subscription Experience
+
+The Add Subscription button should open a modern searchable modal.
+
+Inside the modal:
+
+Search bar
+
+Popular subscriptions
+
+Recently added (optional)
+
+Categories
+
+Search should filter results instantly while typing.
+
+Selecting a subscription should automatically fill
+
+* Name
+* Logo
+* Category
+* Default Billing Cycle
+
+The user should only need to choose
+
+* Price
+* Currency
+* Renewal Date
+* Notes (optional)
+
+---
+
+# Popular Section
+
+Show popular subscriptions before searching.
+
+Examples
+
+Netflix
+
+Spotify
+
+ChatGPT Plus
+
+YouTube Premium
+
+Disney+
+
+Amazon Prime
+
+Google One
+
+Adobe
+
+Canva
+
+Microsoft 365
+
+Discord Nitro
+
+GitHub Copilot
+
+---
+
+# Categories
+
+Organize subscriptions into
+
+Entertainment
+
+Music
+
+AI
+
+Productivity
+
+Cloud Storage
+
+Development
+
+Gaming
+
+Education
+
+Finance
+
+Health
+
+Shopping
+
+Utilities
+
+Communication
+
+Design
+
+Business
+
+Security
+
+Travel
+
+News
+
+Lifestyle
+
+Allow filtering by category.
+
+---
+
+# Multi Currency Support
+
+Support all major world currencies.
+
+At minimum support every common ISO-4217 currency.
+
+Each currency should include
+
+* Country flag
+* Symbol
+* ISO code
+* Full currency name
+
+Examples
+
+🇮🇳 ₹ INR — Indian Rupee
+
+🇺🇸 $ USD — US Dollar
+
+🇬🇧 £ GBP — Pound Sterling
+
+🇪🇺 € EUR — Euro
+
+🇯🇵 ¥ JPY — Japanese Yen
+
+Support automatic formatting.
+
+---
+
+# Default Currency
+
+Allow users to choose a default currency inside Settings.
+
+Every new subscription should automatically use this currency.
+
+---
+
+# Subscription Cards
+
+Improve each card.
+
+Display
+
+Logo
+
+Subscription Name
+
+Category Badge
+
+Billing Cycle Badge
+
+Price
+
+Currency
+
+Renewal Date
+
+Days Remaining
+
+Status
+
+Make the cards visually modern.
+
+---
+
+# Search
+
+Global search should search
+
+Subscription Name
+
+Category
+
+Notes
+
+---
+
+# Sorting
+
+Allow sorting by
+
+Alphabetical
+
+Highest Price
+
+Lowest Price
+
+Renewal Date
+
+Recently Added
+
+Oldest
+
+---
+
+# Filters
+
+Filter by
+
+Category
+
+Billing Cycle
+
+Price Range
+
+Currency
+
+Active
+
+Archived
+
+---
+
+# Data Structure
+
+Create a dedicated subscription catalog.
+
+Example
+
+/src/data/subscriptions.ts
+
+or
+
+/src/data/subscriptions.json
+
+Never hardcode the list inside components.
+
+Make it easy to add more services later.
+
+---
+
+# Architecture
+
+Keep components reusable.
+
+Separate
+
+UI
+
+Business Logic
+
+Data
+
+Types
+
+Utilities
+
+Follow clean architecture.
+
+---
+
+# UI Quality
+
+Maintain the current design.
+
+Improve spacing.
+
+Improve animations.
+
+Improve empty states.
+
+Improve loading states.
+
+Keep everything responsive.
+
+---
+
+# Performance
+
+Optimize search using memoization or efficient filtering.
+
+Avoid unnecessary re-renders.
+
+Use lazy loading if appropriate.
+
+---
+
+# IMPORTANT
+
+Do not remove existing functionality.
+
+Only improve it.
+
+The final result should feel like a polished SaaS application similar to Stripe, Linear, Vercel or Notion.
+
+Before writing code, explain the implementation plan.
+
+Then implement the feature incrementally while preserving the existing project.

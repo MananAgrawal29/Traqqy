@@ -3,13 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SubTrack – Subscription Tracker API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: subscriptions
+    description: Subscription management
+  - name: categories
+    description: Category management
+  - name: reminders
+    description: Reminder/notification preferences
+  - name: dashboard
+    description: Dashboard stats and summaries
+  - name: analytics
+    description: Analytics and spending trends
+  - name: calendar
+    description: Calendar renewal events
+  - name: settings
+    description: User profile and settings
+
 paths:
   /healthz:
     get:
@@ -24,6 +39,512 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ──────────────────────────────
+  # SUBSCRIPTIONS
+  # ──────────────────────────────
+  /subscriptions:
+    get:
+      operationId: listSubscriptions
+      tags: [subscriptions]
+      summary: List all subscriptions for the current user
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, archived, all]
+          description: Filter by status
+        - name: categoryId
+          in: query
+          schema:
+            type: ["integer", "null"]
+          description: Filter by category ID
+        - name: billingCycle
+          in: query
+          schema:
+            type: string
+            enum: [weekly, monthly, quarterly, semi_annual, yearly]
+          description: Filter by billing cycle
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by name, notes
+        - name: minPrice
+          in: query
+          schema:
+            type: ["number", "null"]
+          description: Minimum price filter
+        - name: maxPrice
+          in: query
+          schema:
+            type: ["number", "null"]
+          description: Maximum price filter
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [name, price, renewalDate, createdAt, monthlyEquivalent]
+          description: Sort field
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+          description: Sort direction
+      responses:
+        "200":
+          description: List of subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subscription"
+        "401":
+          description: Unauthorized
+
+    post:
+      operationId: createSubscription
+      tags: [subscriptions]
+      summary: Create a new subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionInput"
+      responses:
+        "201":
+          description: Created subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "400":
+          description: Validation error
+        "401":
+          description: Unauthorized
+
+  /subscriptions/{id}:
+    get:
+      operationId: getSubscription
+      tags: [subscriptions]
+      summary: Get a subscription by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "404":
+          description: Not found
+
+    patch:
+      operationId: updateSubscription
+      tags: [subscriptions]
+      summary: Update a subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionUpdate"
+      responses:
+        "200":
+          description: Updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "404":
+          description: Not found
+
+    delete:
+      operationId: deleteSubscription
+      tags: [subscriptions]
+      summary: Delete a subscription permanently
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /subscriptions/{id}/archive:
+    patch:
+      operationId: archiveSubscription
+      tags: [subscriptions]
+      summary: Archive a subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Archived subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+  /subscriptions/{id}/restore:
+    patch:
+      operationId: restoreSubscription
+      tags: [subscriptions]
+      summary: Restore an archived subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Restored subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+  # ──────────────────────────────
+  # CATEGORIES
+  # ──────────────────────────────
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories (defaults + user-created)
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a custom category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "400":
+          description: Validation error
+
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a custom category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdate"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete a custom category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ──────────────────────────────
+  # REMINDERS
+  # ──────────────────────────────
+  /reminders:
+    get:
+      operationId: listReminders
+      tags: [reminders]
+      summary: List all reminders for the current user
+      responses:
+        "200":
+          description: List of reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+
+    post:
+      operationId: createReminder
+      tags: [reminders]
+      summary: Create a reminder for a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReminderInput"
+      responses:
+        "201":
+          description: Created reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+
+  /reminders/{id}:
+    patch:
+      operationId: updateReminder
+      tags: [reminders]
+      summary: Update a reminder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReminderUpdate"
+      responses:
+        "200":
+          description: Updated reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+
+    delete:
+      operationId: deleteReminder
+      tags: [reminders]
+      summary: Delete a reminder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ──────────────────────────────
+  # DASHBOARD
+  # ──────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/upcoming-renewals:
+    get:
+      operationId: getUpcomingRenewals
+      tags: [dashboard]
+      summary: Get subscriptions renewing in the next 30 days
+      responses:
+        "200":
+          description: Upcoming renewals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subscription"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recently added or modified subscriptions
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subscription"
+
+  # ──────────────────────────────
+  # ANALYTICS
+  # ──────────────────────────────
+  /analytics/spending-by-category:
+    get:
+      operationId: getSpendingByCategory
+      tags: [analytics]
+      summary: Monthly spend grouped by category
+      responses:
+        "200":
+          description: Spending by category
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategorySpend"
+
+  /analytics/monthly-trend:
+    get:
+      operationId: getMonthlyTrend
+      tags: [analytics]
+      summary: Monthly spending trend for the past 12 months
+      responses:
+        "200":
+          description: Monthly trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyTrend"
+
+  /analytics/overview:
+    get:
+      operationId: getAnalyticsOverview
+      tags: [analytics]
+      summary: Overview stats – total annual spend, average monthly, highest expense
+      responses:
+        "200":
+          description: Analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsOverview"
+
+  # ──────────────────────────────
+  # CALENDAR
+  # ──────────────────────────────
+  /calendar:
+    get:
+      operationId: getCalendarEvents
+      tags: [calendar]
+      summary: Get renewal dates for a given month
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Calendar events grouped by date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarDay"
+
+  # ──────────────────────────────
+  # SETTINGS
+  # ──────────────────────────────
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get user settings
+      responses:
+        "200":
+          description: User settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettings"
+
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update user settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettings"
+
+  /settings/account:
+    delete:
+      operationId: deleteAccount
+      tags: [settings]
+      summary: Delete account and all user data
+      responses:
+        "204":
+          description: Account deleted
+
+# ──────────────────────────────────────────────────────────────
+# SCHEMAS
+# ──────────────────────────────────────────────────────────────
 components:
   schemas:
     HealthStatus:
@@ -34,3 +555,327 @@ components:
       required:
         - status
 
+    # ── Subscription ──
+    Subscription:
+      type: object
+      required: [id, userId, name, price, currency, billingCycle, renewalDate, isActive, isArchived, monthlyEquivalent, annualEquivalent, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        logoUrl:
+          type: ["string", "null"]
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: ["string", "null"]
+        price:
+          type: number
+        currency:
+          type: string
+        billingCycle:
+          type: string
+          enum: [weekly, monthly, quarterly, semi_annual, yearly]
+        renewalDate:
+          type: string
+          description: ISO date string YYYY-MM-DD
+        paymentMethod:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        isArchived:
+          type: boolean
+        monthlyEquivalent:
+          type: number
+          description: Monthly cost equivalent in the original currency
+        annualEquivalent:
+          type: number
+          description: Annual cost equivalent in the original currency
+        daysUntilRenewal:
+          type: ["integer", "null"]
+          description: Days until next renewal (null if archived)
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SubscriptionInput:
+      type: object
+      required: [name, price, currency, billingCycle, renewalDate]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        logoUrl:
+          type: string
+        categoryId:
+          type: integer
+        price:
+          type: number
+          minimum: 0
+        currency:
+          type: string
+          default: USD
+        billingCycle:
+          type: string
+          enum: [weekly, monthly, quarterly, semi_annual, yearly]
+        renewalDate:
+          type: string
+          description: ISO date YYYY-MM-DD
+        paymentMethod:
+          type: string
+        notes:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+
+    SubscriptionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        logoUrl:
+          type: ["string", "null"]
+        categoryId:
+          type: ["integer", "null"]
+        price:
+          type: number
+          minimum: 0
+        currency:
+          type: string
+        billingCycle:
+          type: string
+          enum: [weekly, monthly, quarterly, semi_annual, yearly]
+        renewalDate:
+          type: string
+        paymentMethod:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+
+    # ── Category ──
+    Category:
+      type: object
+      required: [id, name, isDefault, color, icon]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        isDefault:
+          type: boolean
+        userId:
+          type: ["string", "null"]
+        subscriptionCount:
+          type: integer
+
+    CategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        color:
+          type: string
+        icon:
+          type: string
+
+    CategoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        color:
+          type: string
+        icon:
+          type: string
+
+    # ── Reminder ──
+    Reminder:
+      type: object
+      required: [id, userId, subscriptionId, daysBefore, isEnabled, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        subscriptionId:
+          type: integer
+        subscriptionName:
+          type: ["string", "null"]
+        daysBefore:
+          type: integer
+          description: Days before renewal to send reminder (1, 3, 7)
+        isEnabled:
+          type: boolean
+        createdAt:
+          type: string
+
+    ReminderInput:
+      type: object
+      required: [subscriptionId, daysBefore]
+      properties:
+        subscriptionId:
+          type: integer
+        daysBefore:
+          type: integer
+          enum: [1, 3, 7, 14, 30]
+        isEnabled:
+          type: boolean
+          default: true
+
+    ReminderUpdate:
+      type: object
+      properties:
+        daysBefore:
+          type: integer
+          enum: [1, 3, 7, 14, 30]
+        isEnabled:
+          type: boolean
+
+    # ── Dashboard ──
+    DashboardSummary:
+      type: object
+      required: [totalActiveSubscriptions, totalArchivedSubscriptions, monthlySpend, yearlySpend, upcomingRenewalsCount, nextRenewalDays]
+      properties:
+        totalActiveSubscriptions:
+          type: integer
+        totalArchivedSubscriptions:
+          type: integer
+        monthlySpend:
+          type: number
+        yearlySpend:
+          type: number
+        upcomingRenewalsCount:
+          type: integer
+          description: Renewals in the next 7 days
+        nextRenewalDays:
+          type: ["integer", "null"]
+          description: Days until next renewal, null if no subscriptions
+
+    # ── Analytics ──
+    CategorySpend:
+      type: object
+      required: [categoryId, categoryName, color, icon, monthlyAmount, percentage, subscriptionCount]
+      properties:
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        monthlyAmount:
+          type: number
+        percentage:
+          type: number
+        subscriptionCount:
+          type: integer
+
+    MonthlyTrend:
+      type: object
+      required: [month, year, label, totalAmount, subscriptionCount]
+      properties:
+        month:
+          type: integer
+        year:
+          type: integer
+        label:
+          type: string
+          description: e.g. "Jan 2025"
+        totalAmount:
+          type: number
+        subscriptionCount:
+          type: integer
+
+    AnalyticsOverview:
+      type: object
+      required: [totalAnnualSpend, averageMonthlySpend, highestExpense, averageSubscriptionCost, totalSubscriptions]
+      properties:
+        totalAnnualSpend:
+          type: number
+        averageMonthlySpend:
+          type: number
+        highestExpense:
+          type: ["object", "null"]
+          properties:
+            name:
+              type: string
+            monthlyEquivalent:
+              type: number
+            price:
+              type: number
+            billingCycle:
+              type: string
+        averageSubscriptionCost:
+          type: number
+        totalSubscriptions:
+          type: integer
+
+    # ── Calendar ──
+    CalendarDay:
+      type: object
+      required: [date, subscriptions]
+      properties:
+        date:
+          type: string
+          description: ISO date YYYY-MM-DD
+        subscriptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subscription"
+
+    # ── Settings ──
+    UserSettings:
+      type: object
+      required: [id, userId, currency, theme, timezone, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        displayName:
+          type: ["string", "null"]
+        currency:
+          type: string
+          default: USD
+        theme:
+          type: string
+          enum: [light, dark, system]
+          default: system
+        timezone:
+          type: string
+          default: UTC
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    UserSettingsUpdate:
+      type: object
+      properties:
+        displayName:
+          type: ["string", "null"]
+        currency:
+          type: string
+        theme:
+          type: string
+          enum: [light, dark, system]
+        timezone:
+          type: string

@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "SubTrack – Subscription Tracker"
+version = "1.0.0"
+id = "artifacts/subtrack"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24210
+
+[services.development]
+run = "pnpm --filter @workspace/subtrack run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/subtrack", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/subtrack/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24210"
+BASE_PATH = "/"
