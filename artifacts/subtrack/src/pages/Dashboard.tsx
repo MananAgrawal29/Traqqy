@@ -21,6 +21,7 @@ function formatCurrency(amount: number, currency: string = 'INR') {
 export default function Dashboard() {
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary();
   const { data: renewals, isLoading: loadingRenewals } = useGetUpcomingRenewals();
+  console.log("renewals =", renewals);
   const { data: activities, isLoading: loadingActivities } = useGetRecentActivity();
   const { data: categorySpends, isLoading: loadingCategories } = useGetSpendingByCategory();
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
-import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import { Router as WouterRouter, Switch, Route, useLocation, Redirect } from 'wouter';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
@@ -16,8 +15,8 @@ import Reminders from '@/pages/Reminders';
 import Settings from '@/pages/Settings';
 import Shell from '@/components/layout/Shell';
 
-const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+//const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
@@ -90,6 +89,9 @@ function SignUpPage() {
     </div>
   );
 }
+import { useAuth } from "@clerk/react";
+
+
 
 function HomeRedirect() {
   return (
@@ -106,15 +108,15 @@ function HomeRedirect() {
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   return (
-    <>
+   <>
       <Show when="signed-in">
         <Shell>
           <Component />
         </Shell>
-      </Show>
+     </Show>
       <Show when="signed-out">
         <Redirect to="/" />
-      </Show>
+     </Show>
     </>
   );
 }
@@ -147,7 +149,7 @@ function Router() {
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
+      //proxyUrl={clerkProxyUrl}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
@@ -184,6 +186,14 @@ function Router() {
   );
 }
 
+//function App() {
+  //return (
+   // <div style={{ padding: "40px", fontSize: "32px" }}>
+     // 🚀 Traqqy works!
+    //</div>
+ // );
+//}
+
 function App() {
   return (
     <WouterRouter base={basePath}>
@@ -191,5 +201,4 @@ function App() {
     </WouterRouter>
   );
 }
-
 export default App;
