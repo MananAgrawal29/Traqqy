@@ -30,12 +30,14 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export async function seedDefaultCategories() {
+
   const existing = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
     .where(eq(categoriesTable.isDefault, true));
   const existingNames = new Set(existing.map(c => c.name));
   const toInsert = DEFAULT_CATEGORIES.filter(c => !existingNames.has(c.name));
+
   if (toInsert.length > 0) {
     await db.insert(categoriesTable).values(toInsert);
   }
@@ -43,6 +45,7 @@ export async function seedDefaultCategories() {
 
 router.get("/", requireAuth, async (req, res) => {
   const userId = getUserId(req);
+
   try {
     const cats = await db
       .select()

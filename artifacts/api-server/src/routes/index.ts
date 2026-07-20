@@ -11,7 +11,7 @@ import { seedDefaultCategories } from "./categories";
 
 const router = Router();
 
-// Seed default categories on startup (idempotent)
+//Seed default categories on startup (idempotent)
 seedDefaultCategories().catch(console.error);
 
 router.use("/healthz", healthRouter);
