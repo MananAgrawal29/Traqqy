@@ -1,9 +1,21 @@
-import React from 'react';
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
+import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { useEffect, useRef } from 'react';
+import {
+  ClerkProvider,
+  SignIn,
+  SignUp,
+  Show,
+  useClerk,
+  useAuth,
+} from "@clerk/react";
 import { shadcn } from '@clerk/themes';
 import { Router as WouterRouter, Switch, Route, useLocation, Redirect } from 'wouter';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
+
 import { Toaster } from 'sonner';
 
 import Landing from '@/pages/Landing';
@@ -89,7 +101,7 @@ function SignUpPage() {
     </div>
   );
 }
-import { useAuth } from "@clerk/react";
+
 
 
 
@@ -143,6 +155,23 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function AuthTokenProvider() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setAuthTokenGetter(async () => {
+      return await getToken();
+    });
+
+    return () => {
+      setAuthTokenGetter(null);
+    };
+  }, [getToken]);
+
+  return null;
+}
+
+
 function Router() {
   const [, setLocation] = useLocation();
 
@@ -158,6 +187,7 @@ function Router() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
+        <AuthTokenProvider />
         <Switch>
           <Route path="/" component={HomeRedirect} />
           <Route path="/sign-in/*?" component={SignInPage} />
