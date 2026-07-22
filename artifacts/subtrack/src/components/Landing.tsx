@@ -131,18 +131,10 @@ function Reveal({
 /*  Navigation                                                         */
 /* ------------------------------------------------------------------ */
 
-const GITHUB_URL = "https://github.com/MananAgrawal29/Traqqy";
-
-const PRIVACY_URL = "https://YOUR-BLOGGER-URL";
-
-const SIGN_IN_ROUTE = "/sign-in";
-
-const SIGN_UP_ROUTE = "/sign-up";
-
 const navLinks = [
   { label: "Features", href: "#features" },
-  { label: "Privacy", href: "PRIVACY_URL" },
-  { label: "GitHub", href: GITHUB_URL },
+  { label: "Privacy", href: "#privacy" },
+  { label: "GitHub", href: "#" },
 ]
 
 function Nav({ theme }: { theme: ReturnType<typeof useTheme> }) {
@@ -154,15 +146,18 @@ function Nav({ theme }: { theme: ReturnType<typeof useTheme> }) {
       className="fixed inset-x-0 top-0 z-50 border-b border-zinc-200/60 bg-white/70 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/70"
     >
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-6">
-        <a href="/logo-icon.svg" className="flex items-center gap-2" aria-label="Traqqy home">
-          <img
-  src="/logo-icon.svg"
-  alt="Traqqy"
-  className="h-8 w-8"
-  draggable={false}
-/>
-            
-          
+        <a href="#" className="flex items-center gap-2" aria-label="Traqqy home">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-600/30">
+            <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" aria-hidden="true">
+              <path
+                d="M4 13.5 9 18l11-11"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
           <span className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Traqqy</span>
         </a>
 
@@ -181,13 +176,13 @@ function Nav({ theme }: { theme: ReturnType<typeof useTheme> }) {
         <div className="flex items-center gap-2">
           <ThemeToggle {...theme} />
           <a
-            href={SIGN_IN_ROUTE}
+            href="#"
             className="hidden rounded-md px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-950 sm:inline-flex dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             Sign In
           </a>
           <a
-            href={SIGN_UP_ROUTE}
+            href="#"
             className="inline-flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-zinc-800 hover:shadow active:scale-[0.98] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             Get Started
@@ -204,10 +199,10 @@ function Nav({ theme }: { theme: ReturnType<typeof useTheme> }) {
 /* ------------------------------------------------------------------ */
 
 const previewSubs = [
-  { name: "Netflix", plan: "Premium", price: "₹649", slug: "netflix"},
-  { name: "Spotify", plan: "Family", price: "₹179", slug: "spotify"},
-  {name: "Crunchyroll", plan: "Fan", price: "₹99", slug: "crunchyroll"},
-  {name: "Google One", plan: "100 GB", price: "₹130", slug: "google-one"},
+  { name: "Netflix", plan: "Premium", price: "₹649", tint: "bg-red-500" },
+  { name: "Spotify", plan: "Family", price: "₹179", tint: "bg-emerald-500" },
+  { name: "ChatGPT", plan: "Plus", price: "₹1,999", tint: "bg-teal-500" },
+  { name: "iCloud+", plan: "200GB", price: "₹75", tint: "bg-sky-500" },
 ]
 
 function DashboardPreview() {
@@ -245,7 +240,7 @@ function DashboardPreview() {
               whileInView={{ height: `${h}%` }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: easeOut, delay: 0.3 + i * 0.06 }}
-              className="w-full rounded-sm bg-rose-500/80 dark:bg-rose-500"
+              className="w-full rounded-sm bg-blue-500/80 dark:bg-blue-500"
               style={{ minHeight: 6 }}
             />
           ))}
@@ -259,20 +254,10 @@ function DashboardPreview() {
             key={sub.name}
             className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-950"
           >
-            <div className="flex items-center gap-3.5">
-              <span
-  className="h-7 w-7 shrink-0 bg-zinc-900 dark:bg-white"
-  style={{
-    maskImage: `url(/logos/${sub.slug}.svg)`,
-    WebkitMaskImage: `url(/logos/${sub.slug}.svg)`,
-    maskRepeat: "no-repeat",
-    WebkitMaskRepeat: "no-repeat",
-    maskPosition: "center",
-    WebkitMaskPosition: "center",
-    maskSize: "contain",
-    WebkitMaskSize: "contain",
-  }}
-/>
+            <div className="flex items-center gap-2.5">
+              <span className={`flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-bold text-white ${sub.tint}`}>
+                {sub.name[0]}
+              </span>
               <div>
                 <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">{sub.name}</p>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{sub.plan}</p>
@@ -307,7 +292,7 @@ function Hero() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
           >
-            <span className="flex h-1.5 w-1.5 rounded-full bg-rose-500" />
+            <span className="flex h-1.5 w-1.5 rounded-full bg-blue-500" />
             Privacy-first by design
           </motion.a>
 
@@ -336,14 +321,14 @@ function Hero() {
             className="mt-8 flex flex-col gap-3 sm:flex-row"
           >
             <a
-              href={SIGN_UP_ROUTE}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-rose-600/25 transition-all hover:bg-rose-500 hover:shadow-md hover:shadow-rose-600/30 active:scale-[0.98]"
+              href="#"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 transition-all hover:bg-blue-500 hover:shadow-md hover:shadow-blue-600/30 active:scale-[0.98]"
             >
               Get Started
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </a>
             <a
-              href={GITHUB_URL}
+              href="#"
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition-all hover:bg-zinc-50 active:scale-[0.98] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800"
             >
               <Github className="h-4 w-4" aria-hidden="true" />
@@ -409,7 +394,7 @@ function Features() {
                   transition={{ duration: 0.25, ease: easeOut }}
                   className="group h-full rounded-2xl border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                 >
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-500/20">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <h3 className="mt-4 text-base font-semibold text-zinc-900 dark:text-zinc-50">{f.title}</h3>
@@ -439,7 +424,7 @@ function Privacy() {
     <section id="privacy" className="border-y border-zinc-200 bg-zinc-50 px-5 py-20 sm:px-6 lg:py-28 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="mx-auto max-w-6xl">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-rose-600 text-white shadow-sm shadow-rose-600/25">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-600/25">
             <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </span>
           <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
@@ -614,7 +599,7 @@ function Marquee() {
 /*  Dashboard showcase (large placeholder)                             */
 /* ------------------------------------------------------------------ */
 
-function Showcase({ theme }: { theme: ReturnType<typeof useTheme> }) {
+function Showcase() {
   return (
     <section className="px-5 py-16 sm:px-6 lg:py-24">
       <div className="mx-auto max-w-5xl">
@@ -629,11 +614,15 @@ function Showcase({ theme }: { theme: ReturnType<typeof useTheme> }) {
 
         <Reveal>
           <div className="rounded-2xl border border-zinc-200 bg-gradient-to-b from-zinc-50 to-white p-2 shadow-xl shadow-zinc-900/5 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950 dark:shadow-black/40">
-            <img
-  src={theme.theme === "dark" ? "/dashboard-dark.png" : "/dashboard-light.png"}
-  alt="Traqqy Dashboard"
-  className="w-full rounded-xl p-2"
-/>
+            <div className="flex aspect-[16/10] items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-white/60 dark:border-zinc-700 dark:bg-zinc-900/40">
+              <div className="flex flex-col items-center text-center">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
+                  <LayoutDashboard className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <p className="mt-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">Dashboard screenshot</p>
+                <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-600">Your real screenshot goes here</p>
+              </div>
+            </div>
           </div>
         </Reveal>
       </div>
@@ -662,8 +651,8 @@ function FinalCTA() {
           </p>
           <div className="mt-8">
             <a
-              href={SIGN_UP_ROUTE}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-rose-600/25 transition-all hover:bg-rose-500 hover:shadow-md active:scale-[0.98]"
+              href="#"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 transition-all hover:bg-blue-500 hover:shadow-md active:scale-[0.98]"
             >
               Get Started
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -684,7 +673,7 @@ function Footer() {
     <footer className="border-t border-zinc-200 px-5 py-10 sm:px-6 dark:border-zinc-800">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-600 text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
               <path
                 d="M4 13.5 9 18l11-11"
@@ -700,7 +689,7 @@ function Footer() {
 
         <div className="flex items-center gap-6">
           <a
-            href= {GITHUB_URL}
+            href="#"
             className="inline-flex items-center gap-1.5 text-sm text-zinc-600 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             <Github className="h-4 w-4" aria-hidden="true" />
@@ -714,7 +703,7 @@ function Footer() {
           </a>
         </div>
 
-        <p className="text-sm text-zinc-500 dark:text-zinc-500">Made with ❤️ by Manan Agrawal</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-500">Made by Manan Agrawal</p>
       </div>
     </footer>
   )
@@ -734,7 +723,7 @@ export default function Landing() {
         <Features />
         <Privacy />
         <Marquee />
-        <Showcase theme={theme} />
+        <Showcase />
         <FinalCTA />
       </main>
       <Footer />
