@@ -681,20 +681,16 @@ function FinalCTA() {
 
 function Footer() {
   return (
-    <footer className="border-t border-zinc-200 px-5 py-10 sm:px-6 dark:border-zinc-800">
+    <footer className="border-t border-zinc-200 px-1 py-1 sm:px-1 dark:border-zinc-800">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-600 text-white">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
-              <path
-                d="M4 13.5 9 18l11-11"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+         
+            <img
+  src="/logo-icon.svg"
+  alt="Traqqy"
+  className="h-8 w-8"
+  draggable={false}
+/>
           <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Traqqy</span>
         </div>
 
