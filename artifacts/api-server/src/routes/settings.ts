@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { userSettingsTable, usersTable } from "@workspace/db";
+import {
+  categoriesTable,
+  subscriptionsTable,
+  userSettingsTable,
+  usersTable,
+} from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
 
@@ -57,8 +62,12 @@ router.patch("/", requireAuth, async (req, res) => {
 router.delete("/account", requireAuth, async (req, res) => {
   const userId = getUserId(req);
   try {
-    // Cascade will handle settings, subscriptions (via clerkId on related tables)
-    await db.delete(usersTable).where(eq(usersTable.clerkId, userId));
+    await db.transaction(async (tx) => {
+      // Deleting subscriptions cascades to their reminders through the existing FK.
+      await tx.delete(subscriptionsTable).where(eq(subscriptionsTable.clerkId, userId));
+      await tx.delete(categoriesTable).where(eq(categoriesTable.clerkId, userId));
+      await tx.delete(usersTable).where(eq(usersTable.clerkId, userId));
+    });
     res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
