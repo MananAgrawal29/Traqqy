@@ -18,7 +18,7 @@ import {
 
 import { Toaster } from 'sonner';
 
-import Landing from '@/pages/Landing';
+import Landing from '@/pages/Landing1';
 import Dashboard from '@/pages/Dashboard';
 import Subscriptions from '@/pages/Subscriptions';
 import Analytics from '@/pages/Analytics';
