@@ -278,6 +278,172 @@ export interface UserSettingsUpdate {
   timezone?: string;
 }
 
+/**
+ * @nullable
+ */
+export type AutoImportStatusLastScanResults = {
+  candidatesFound?: number;
+} | null;
+
+export interface AutoImportStatus {
+  connected?: boolean;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  connectedAt?: string | null;
+  /** @nullable */
+  lastScanAt?: string | null;
+  /** @nullable */
+  lastScanResults?: AutoImportStatusLastScanResults;
+}
+
+export interface GoogleAuthUrl {
+  url?: string;
+  expiresAt?: string;
+}
+
+export interface ScanRequest {
+  monthsBack?: number;
+}
+
+export interface ScanStarted {
+  scanId?: string;
+  status?: string;
+}
+
+export type ScanStatusStatus = typeof ScanStatusStatus[keyof typeof ScanStatusStatus];
+
+
+export const ScanStatusStatus = {
+  queued: 'queued',
+  searching: 'searching',
+  analyzing: 'analyzing',
+  scoring: 'scoring',
+  complete: 'complete',
+  failed: 'failed',
+} as const;
+
+export type ScanStatusProgress = {
+  emailsFound?: number;
+  emailsProcessed?: number;
+  candidatesFound?: number;
+};
+
+export interface ScanStatus {
+  scanId?: string;
+  status?: ScanStatusStatus;
+  progress?: ScanStatusProgress;
+  /** @nullable */
+  startedAt?: string | null;
+  /** @nullable */
+  updatedAt?: string | null;
+  /** @nullable */
+  errorMessage?: string | null;
+}
+
+/**
+ * @nullable
+ */
+export type ImportCandidateCatalogMatch = {
+  id?: string;
+  name?: string;
+} | null;
+
+/**
+ * @nullable
+ */
+export type ImportCandidateBillingCycle = typeof ImportCandidateBillingCycle[keyof typeof ImportCandidateBillingCycle] | null;
+
+
+export const ImportCandidateBillingCycle = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  semi_annual: 'semi_annual',
+  yearly: 'yearly',
+} as const;
+
+export type ImportCandidateConfidenceLabel = typeof ImportCandidateConfidenceLabel[keyof typeof ImportCandidateConfidenceLabel];
+
+
+export const ImportCandidateConfidenceLabel = {
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ImportCandidateDuplicateOf = {
+  subscriptionId?: number;
+  name?: string;
+} | null;
+
+export interface ImportCandidate {
+  id?: string;
+  merchantName?: string;
+  /** @nullable */
+  catalogMatch?: ImportCandidateCatalogMatch;
+  amount?: number;
+  currency?: string;
+  /** @nullable */
+  billingCycle?: ImportCandidateBillingCycle;
+  /** @nullable */
+  lastPaymentDate?: string | null;
+  confidence?: number;
+  confidenceLabel?: ImportCandidateConfidenceLabel;
+  reasons?: string[];
+  evidenceCount?: number;
+  /** @nullable */
+  duplicateOf?: ImportCandidateDuplicateOf;
+  emailSender?: string;
+  emailSubject?: string;
+  selected?: boolean;
+}
+
+export type ScanResultsSummary = {
+  totalScanned?: number;
+  candidatesFound?: number;
+  highConfidence?: number;
+  mediumConfidence?: number;
+  lowConfidence?: number;
+  duplicatesFound?: number;
+};
+
+export interface ScanResults {
+  scanId?: string;
+  candidates?: ImportCandidate[];
+  summary?: ScanResultsSummary;
+}
+
+export type ConfirmImportRequestOverrides = {[key: string]: {
+  categoryId?: number;
+  notes?: string;
+}};
+
+export interface ConfirmImportRequest {
+  scanId: string;
+  candidateIds: string[];
+  overrides?: ConfirmImportRequestOverrides;
+}
+
+export type ConfirmImportResponseImportedItem = {
+  subscriptionId?: number;
+  name?: string;
+  candidateId?: string;
+};
+
+export type ConfirmImportResponseFailedItem = {
+  candidateId?: string;
+  reason?: string;
+};
+
+export interface ConfirmImportResponse {
+  imported?: ConfirmImportResponseImportedItem[];
+  failed?: ConfirmImportResponseFailedItem[];
+}
+
 export type ListSubscriptionsParams = {
 /**
  * Filter by status
@@ -358,5 +524,10 @@ export const ListSubscriptionsSortOrder = {
 export type GetCalendarEventsParams = {
 year: number;
 month: number;
+};
+
+export type GoogleOAuthCallbackParams = {
+code: string;
+state: string;
 };
 

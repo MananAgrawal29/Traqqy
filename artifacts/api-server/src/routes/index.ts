@@ -7,6 +7,7 @@ import dashboardRouter from "./dashboard";
 import analyticsRouter from "./analytics";
 import calendarRouter from "./calendar";
 import settingsRouter from "./settings";
+import autoImportRouter from "./auto-import";
 import { seedDefaultCategories } from "./categories";
 
 const router = Router();
@@ -22,5 +23,6 @@ router.use("/dashboard", dashboardRouter);
 router.use("/analytics", analyticsRouter);
 router.use("/calendar", calendarRouter);
 router.use("/settings", settingsRouter);
+router.use("/auto-import", autoImportRouter);
 
 export default router;

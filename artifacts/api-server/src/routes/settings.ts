@@ -5,6 +5,9 @@ import {
   subscriptionsTable,
   userSettingsTable,
   usersTable,
+  gmailConnectionsTable,
+  autoImportScansTable,
+  autoImportCandidatesTable,
 } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
@@ -65,7 +68,11 @@ router.delete("/account", requireAuth, async (req, res) => {
     await db.transaction(async (tx) => {
       // Deleting subscriptions cascades to their reminders through the existing FK.
       await tx.delete(subscriptionsTable).where(eq(subscriptionsTable.clerkId, userId));
-      await tx.delete(categoriesTable).where(eq(categoriesTable.clerkId, userId));
+      await tx.delete(categoriesTable).where(eq(subscriptionsTable.clerkId, userId));
+      // Delete auto-import data
+      await tx.delete(autoImportCandidatesTable).where(eq(autoImportCandidatesTable.clerkId, userId));
+      await tx.delete(autoImportScansTable).where(eq(autoImportScansTable.clerkId, userId));
+      await tx.delete(gmailConnectionsTable).where(eq(gmailConnectionsTable.clerkId, userId));
       await tx.delete(usersTable).where(eq(usersTable.clerkId, userId));
     });
     res.status(204).send();

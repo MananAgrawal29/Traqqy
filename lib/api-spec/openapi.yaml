@@ -24,6 +24,8 @@ tags:
     description: Calendar renewal events
   - name: settings
     description: User profile and settings
+  - name: auto-import
+    description: Gmail auto-import subscription detection
 
 paths:
   /healthz:
@@ -542,6 +544,142 @@ paths:
         "204":
           description: Account deleted
 
+  # ──────────────────────────────
+  # AUTO-IMPORT
+  # ──────────────────────────────
+  /auto-import/status:
+    get:
+      operationId: getAutoImportStatus
+      tags: [auto-import]
+      summary: Get Gmail connection and scan status
+      responses:
+        "200":
+          description: Auto import status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutoImportStatus"
+
+  /auto-import/google/auth-url:
+    get:
+      operationId: getGoogleAuthUrl
+      tags: [auto-import]
+      summary: Get Google OAuth authorization URL
+      responses:
+        "200":
+          description: OAuth URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoogleAuthUrl"
+
+  /auto-import/google/callback:
+    get:
+      operationId: googleOAuthCallback
+      tags: [auto-import]
+      summary: Google OAuth callback (code exchange)
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Callback processed
+        "302":
+          description: Redirect to callback page
+
+  /auto-import/scan:
+    post:
+      operationId: startAutoImportScan
+      tags: [auto-import]
+      summary: Start scanning Gmail for subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+      responses:
+        "200":
+          description: Scan started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanStarted"
+
+  /auto-import/scan/{scanId}/status:
+    get:
+      operationId: getScanStatus
+      tags: [auto-import]
+      summary: Poll scan progress
+      parameters:
+        - name: scanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Scan status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanStatus"
+
+  /auto-import/scan/{scanId}/results:
+    get:
+      operationId: getScanResults
+      tags: [auto-import]
+      summary: Get scan detection results
+      parameters:
+        - name: scanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Scan results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResults"
+
+  /auto-import/confirm:
+    post:
+      operationId: confirmAutoImport
+      tags: [auto-import]
+      summary: Import selected subscription candidates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmImportRequest"
+      responses:
+        "200":
+          description: Import results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmImportResponse"
+
+  /auto-import/disconnect:
+    post:
+      operationId: disconnectGmail
+      tags: [auto-import]
+      summary: Disconnect Gmail and delete stored tokens
+      responses:
+        "204":
+          description: Disconnected
+
 # ──────────────────────────────────────────────────────────────
 # SCHEMAS
 # ──────────────────────────────────────────────────────────────
@@ -879,3 +1017,185 @@ components:
           enum: [light, dark, system]
         timezone:
           type: string
+
+    # ── Auto Import ──
+    AutoImportStatus:
+      type: object
+      properties:
+        connected:
+          type: boolean
+        email:
+          type: ["string", "null"]
+        connectedAt:
+          type: ["string", "null"]
+        lastScanAt:
+          type: ["string", "null"]
+        lastScanResults:
+          type: ["object", "null"]
+          properties:
+            candidatesFound:
+              type: integer
+
+    GoogleAuthUrl:
+      type: object
+      properties:
+        url:
+          type: string
+        expiresAt:
+          type: string
+
+    ScanRequest:
+      type: object
+      properties:
+        monthsBack:
+          type: integer
+          default: 12
+
+    ScanStarted:
+      type: object
+      properties:
+        scanId:
+          type: string
+        status:
+          type: string
+
+    ScanStatus:
+      type: object
+      properties:
+        scanId:
+          type: string
+        status:
+          type: string
+          enum: [queued, searching, analyzing, scoring, complete, failed]
+        progress:
+          type: object
+          properties:
+            emailsFound:
+              type: integer
+            emailsProcessed:
+              type: integer
+            candidatesFound:
+              type: integer
+        startedAt:
+          type: ["string", "null"]
+        updatedAt:
+          type: ["string", "null"]
+        errorMessage:
+          type: ["string", "null"]
+
+    ImportCandidate:
+      type: object
+      properties:
+        id:
+          type: string
+        merchantName:
+          type: string
+        catalogMatch:
+          type: ["object", "null"]
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        billingCycle:
+          type: ["string", "null"]
+          enum: [weekly, monthly, quarterly, semi_annual, yearly]
+        lastPaymentDate:
+          type: ["string", "null"]
+        confidence:
+          type: integer
+        confidenceLabel:
+          type: string
+          enum: [high, medium, low]
+        reasons:
+          type: array
+          items:
+            type: string
+        evidenceCount:
+          type: integer
+        duplicateOf:
+          type: ["object", "null"]
+          properties:
+            subscriptionId:
+              type: integer
+            name:
+              type: string
+        emailSender:
+          type: string
+        emailSubject:
+          type: string
+        selected:
+          type: boolean
+
+    ScanResults:
+      type: object
+      properties:
+        scanId:
+          type: string
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImportCandidate"
+        summary:
+          type: object
+          properties:
+            totalScanned:
+              type: integer
+            candidatesFound:
+              type: integer
+            highConfidence:
+              type: integer
+            mediumConfidence:
+              type: integer
+            lowConfidence:
+              type: integer
+            duplicatesFound:
+              type: integer
+
+    ConfirmImportRequest:
+      type: object
+      required: [scanId, candidateIds]
+      properties:
+        scanId:
+          type: string
+        candidateIds:
+          type: array
+          items:
+            type: string
+        overrides:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              categoryId:
+                type: integer
+              notes:
+                type: string
+
+    ConfirmImportResponse:
+      type: object
+      properties:
+        imported:
+          type: array
+          items:
+            type: object
+            properties:
+              subscriptionId:
+                type: integer
+              name:
+                type: string
+              candidateId:
+                type: string
+        failed:
+          type: array
+          items:
+            type: object
+            properties:
+              candidateId:
+                type: string
+              reason:
+                type: string

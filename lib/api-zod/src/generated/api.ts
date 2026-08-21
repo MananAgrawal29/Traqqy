@@ -591,3 +591,147 @@ export const UpdateSettingsResponse = zod.object({
 export const DeleteAccountResponse = zod.void()
 
 
+/**
+ * @summary Get Gmail connection and scan status
+ */
+export const GetAutoImportStatusResponse = zod.object({
+  "connected": zod.boolean().optional(),
+  "email": zod.string().nullish(),
+  "connectedAt": zod.string().nullish(),
+  "lastScanAt": zod.string().nullish(),
+  "lastScanResults": zod.object({
+  "candidatesFound": zod.number().optional()
+}).nullish()
+})
+
+
+/**
+ * @summary Get Google OAuth authorization URL
+ */
+export const GetGoogleAuthUrlResponse = zod.object({
+  "url": zod.string().optional(),
+  "expiresAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Google OAuth callback (code exchange)
+ */
+export const GoogleOAuthCallbackQueryParams = zod.object({
+  "code": zod.coerce.string(),
+  "state": zod.coerce.string()
+})
+
+export const GoogleOAuthCallbackResponse = zod.unknown()
+
+
+/**
+ * @summary Start scanning Gmail for subscriptions
+ */
+export const startAutoImportScanBodyMonthsBackDefault = 12;
+
+export const StartAutoImportScanBody = zod.object({
+  "monthsBack": zod.number().default(startAutoImportScanBodyMonthsBackDefault)
+})
+
+export const StartAutoImportScanResponse = zod.object({
+  "scanId": zod.string().optional(),
+  "status": zod.string().optional()
+})
+
+
+/**
+ * @summary Poll scan progress
+ */
+export const GetScanStatusParams = zod.object({
+  "scanId": zod.coerce.string()
+})
+
+export const GetScanStatusResponse = zod.object({
+  "scanId": zod.string().optional(),
+  "status": zod.enum(['queued', 'searching', 'analyzing', 'scoring', 'complete', 'failed']).optional(),
+  "progress": zod.object({
+  "emailsFound": zod.number().optional(),
+  "emailsProcessed": zod.number().optional(),
+  "candidatesFound": zod.number().optional()
+}).optional(),
+  "startedAt": zod.string().nullish(),
+  "updatedAt": zod.string().nullish(),
+  "errorMessage": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get scan detection results
+ */
+export const GetScanResultsParams = zod.object({
+  "scanId": zod.coerce.string()
+})
+
+export const GetScanResultsResponse = zod.object({
+  "scanId": zod.string().optional(),
+  "candidates": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "merchantName": zod.string().optional(),
+  "catalogMatch": zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+}).nullish(),
+  "amount": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']).nullish(),
+  "lastPaymentDate": zod.string().nullish(),
+  "confidence": zod.number().optional(),
+  "confidenceLabel": zod.enum(['high', 'medium', 'low']).optional(),
+  "reasons": zod.array(zod.string()).optional(),
+  "evidenceCount": zod.number().optional(),
+  "duplicateOf": zod.object({
+  "subscriptionId": zod.number().optional(),
+  "name": zod.string().optional()
+}).nullish(),
+  "emailSender": zod.string().optional(),
+  "emailSubject": zod.string().optional(),
+  "selected": zod.boolean().optional()
+})).optional(),
+  "summary": zod.object({
+  "totalScanned": zod.number().optional(),
+  "candidatesFound": zod.number().optional(),
+  "highConfidence": zod.number().optional(),
+  "mediumConfidence": zod.number().optional(),
+  "lowConfidence": zod.number().optional(),
+  "duplicatesFound": zod.number().optional()
+}).optional()
+})
+
+
+/**
+ * @summary Import selected subscription candidates
+ */
+export const ConfirmAutoImportBody = zod.object({
+  "scanId": zod.string(),
+  "candidateIds": zod.array(zod.string()),
+  "overrides": zod.record(zod.string(), zod.object({
+  "categoryId": zod.number().optional(),
+  "notes": zod.string().optional()
+})).optional()
+})
+
+export const ConfirmAutoImportResponse = zod.object({
+  "imported": zod.array(zod.object({
+  "subscriptionId": zod.number().optional(),
+  "name": zod.string().optional(),
+  "candidateId": zod.string().optional()
+})).optional(),
+  "failed": zod.array(zod.object({
+  "candidateId": zod.string().optional(),
+  "reason": zod.string().optional()
+})).optional()
+})
+
+
+/**
+ * @summary Disconnect Gmail and delete stored tokens
+ */
+export const DisconnectGmailResponse = zod.void()
+
+

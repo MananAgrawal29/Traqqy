@@ -21,19 +21,28 @@ import type {
 
 import type {
   AnalyticsOverview,
+  AutoImportStatus,
   CalendarDay,
   Category,
   CategoryInput,
   CategorySpend,
   CategoryUpdate,
+  ConfirmImportRequest,
+  ConfirmImportResponse,
   DashboardSummary,
   GetCalendarEventsParams,
+  GoogleAuthUrl,
+  GoogleOAuthCallbackParams,
   HealthStatus,
   ListSubscriptionsParams,
   MonthlyTrend,
   Reminder,
   ReminderInput,
   ReminderUpdate,
+  ScanRequest,
+  ScanResults,
+  ScanStarted,
+  ScanStatus,
   Subscription,
   SubscriptionInput,
   SubscriptionUpdate,
@@ -2008,5 +2017,610 @@ export const useDeleteAccount = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteAccountMutationOptions(options));
+    }
+
+export const getGetAutoImportStatusUrl = () => {
+
+
+
+
+  return `/api/auto-import/status`
+}
+
+/**
+ * @summary Get Gmail connection and scan status
+ */
+export const getAutoImportStatus = async ( options?: RequestInit): Promise<AutoImportStatus> => {
+
+  return customFetch<AutoImportStatus>(getGetAutoImportStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAutoImportStatusQueryKey = () => {
+    return [
+    `/api/auto-import/status`
+    ] as const;
+    }
+
+
+export const getGetAutoImportStatusQueryOptions = <TData = Awaited<ReturnType<typeof getAutoImportStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAutoImportStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAutoImportStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAutoImportStatus>>> = ({ signal }) => getAutoImportStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAutoImportStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAutoImportStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getAutoImportStatus>>>
+export type GetAutoImportStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Gmail connection and scan status
+ */
+
+export function useGetAutoImportStatus<TData = Awaited<ReturnType<typeof getAutoImportStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAutoImportStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAutoImportStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetGoogleAuthUrlUrl = () => {
+
+
+
+
+  return `/api/auto-import/google/auth-url`
+}
+
+/**
+ * @summary Get Google OAuth authorization URL
+ */
+export const getGoogleAuthUrl = async ( options?: RequestInit): Promise<GoogleAuthUrl> => {
+
+  return customFetch<GoogleAuthUrl>(getGetGoogleAuthUrlUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGoogleAuthUrlQueryKey = () => {
+    return [
+    `/api/auto-import/google/auth-url`
+    ] as const;
+    }
+
+
+export const getGetGoogleAuthUrlQueryOptions = <TData = Awaited<ReturnType<typeof getGoogleAuthUrl>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGoogleAuthUrl>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGoogleAuthUrlQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGoogleAuthUrl>>> = ({ signal }) => getGoogleAuthUrl({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGoogleAuthUrl>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGoogleAuthUrlQueryResult = NonNullable<Awaited<ReturnType<typeof getGoogleAuthUrl>>>
+export type GetGoogleAuthUrlQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Google OAuth authorization URL
+ */
+
+export function useGetGoogleAuthUrl<TData = Awaited<ReturnType<typeof getGoogleAuthUrl>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGoogleAuthUrl>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGoogleAuthUrlQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGoogleOAuthCallbackUrl = (params: GoogleOAuthCallbackParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/auto-import/google/callback?${stringifiedParams}` : `/api/auto-import/google/callback`
+}
+
+/**
+ * @summary Google OAuth callback (code exchange)
+ */
+export const googleOAuthCallback = async (params: GoogleOAuthCallbackParams, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getGoogleOAuthCallbackUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGoogleOAuthCallbackQueryKey = (params?: GoogleOAuthCallbackParams,) => {
+    return [
+    `/api/auto-import/google/callback`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGoogleOAuthCallbackQueryOptions = <TData = Awaited<ReturnType<typeof googleOAuthCallback>>, TError = ErrorType<void>>(params: GoogleOAuthCallbackParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof googleOAuthCallback>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGoogleOAuthCallbackQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof googleOAuthCallback>>> = ({ signal }) => googleOAuthCallback(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof googleOAuthCallback>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GoogleOAuthCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof googleOAuthCallback>>>
+export type GoogleOAuthCallbackQueryError = ErrorType<void>
+
+
+/**
+ * @summary Google OAuth callback (code exchange)
+ */
+
+export function useGoogleOAuthCallback<TData = Awaited<ReturnType<typeof googleOAuthCallback>>, TError = ErrorType<void>>(
+ params: GoogleOAuthCallbackParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof googleOAuthCallback>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGoogleOAuthCallbackQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getStartAutoImportScanUrl = () => {
+
+
+
+
+  return `/api/auto-import/scan`
+}
+
+/**
+ * @summary Start scanning Gmail for subscriptions
+ */
+export const startAutoImportScan = async (scanRequest: ScanRequest, options?: RequestInit): Promise<ScanStarted> => {
+
+  return customFetch<ScanStarted>(getStartAutoImportScanUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(scanRequest)
+  }
+);}
+
+
+
+
+
+export const getStartAutoImportScanMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startAutoImportScan>>, TError,{data: BodyType<ScanRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startAutoImportScan>>, TError,{data: BodyType<ScanRequest>}, TContext> => {
+
+const mutationKey = ['startAutoImportScan'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startAutoImportScan>>, {data: BodyType<ScanRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  startAutoImportScan(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartAutoImportScanMutationResult = NonNullable<Awaited<ReturnType<typeof startAutoImportScan>>>
+    export type StartAutoImportScanMutationBody = BodyType<ScanRequest>
+    export type StartAutoImportScanMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Start scanning Gmail for subscriptions
+ */
+export const useStartAutoImportScan = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startAutoImportScan>>, TError,{data: BodyType<ScanRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof startAutoImportScan>>,
+        TError,
+        {data: BodyType<ScanRequest>},
+        TContext
+      > => {
+      return useMutation(getStartAutoImportScanMutationOptions(options));
+    }
+
+export const getGetScanStatusUrl = (scanId: string,) => {
+
+
+
+
+  return `/api/auto-import/scan/${scanId}/status`
+}
+
+/**
+ * @summary Poll scan progress
+ */
+export const getScanStatus = async (scanId: string, options?: RequestInit): Promise<ScanStatus> => {
+
+  return customFetch<ScanStatus>(getGetScanStatusUrl(scanId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetScanStatusQueryKey = (scanId: string,) => {
+    return [
+    `/api/auto-import/scan/${scanId}/status`
+    ] as const;
+    }
+
+
+export const getGetScanStatusQueryOptions = <TData = Awaited<ReturnType<typeof getScanStatus>>, TError = ErrorType<unknown>>(scanId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getScanStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetScanStatusQueryKey(scanId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getScanStatus>>> = ({ signal }) => getScanStatus(scanId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: scanId !== null && scanId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScanStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetScanStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getScanStatus>>>
+export type GetScanStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Poll scan progress
+ */
+
+export function useGetScanStatus<TData = Awaited<ReturnType<typeof getScanStatus>>, TError = ErrorType<unknown>>(
+ scanId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getScanStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetScanStatusQueryOptions(scanId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetScanResultsUrl = (scanId: string,) => {
+
+
+
+
+  return `/api/auto-import/scan/${scanId}/results`
+}
+
+/**
+ * @summary Get scan detection results
+ */
+export const getScanResults = async (scanId: string, options?: RequestInit): Promise<ScanResults> => {
+
+  return customFetch<ScanResults>(getGetScanResultsUrl(scanId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetScanResultsQueryKey = (scanId: string,) => {
+    return [
+    `/api/auto-import/scan/${scanId}/results`
+    ] as const;
+    }
+
+
+export const getGetScanResultsQueryOptions = <TData = Awaited<ReturnType<typeof getScanResults>>, TError = ErrorType<unknown>>(scanId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getScanResults>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetScanResultsQueryKey(scanId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getScanResults>>> = ({ signal }) => getScanResults(scanId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: scanId !== null && scanId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScanResults>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetScanResultsQueryResult = NonNullable<Awaited<ReturnType<typeof getScanResults>>>
+export type GetScanResultsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get scan detection results
+ */
+
+export function useGetScanResults<TData = Awaited<ReturnType<typeof getScanResults>>, TError = ErrorType<unknown>>(
+ scanId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getScanResults>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetScanResultsQueryOptions(scanId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getConfirmAutoImportUrl = () => {
+
+
+
+
+  return `/api/auto-import/confirm`
+}
+
+/**
+ * @summary Import selected subscription candidates
+ */
+export const confirmAutoImport = async (confirmImportRequest: ConfirmImportRequest, options?: RequestInit): Promise<ConfirmImportResponse> => {
+
+  return customFetch<ConfirmImportResponse>(getConfirmAutoImportUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(confirmImportRequest)
+  }
+);}
+
+
+
+
+
+export const getConfirmAutoImportMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmAutoImport>>, TError,{data: BodyType<ConfirmImportRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmAutoImport>>, TError,{data: BodyType<ConfirmImportRequest>}, TContext> => {
+
+const mutationKey = ['confirmAutoImport'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmAutoImport>>, {data: BodyType<ConfirmImportRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  confirmAutoImport(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmAutoImportMutationResult = NonNullable<Awaited<ReturnType<typeof confirmAutoImport>>>
+    export type ConfirmAutoImportMutationBody = BodyType<ConfirmImportRequest>
+    export type ConfirmAutoImportMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Import selected subscription candidates
+ */
+export const useConfirmAutoImport = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmAutoImport>>, TError,{data: BodyType<ConfirmImportRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof confirmAutoImport>>,
+        TError,
+        {data: BodyType<ConfirmImportRequest>},
+        TContext
+      > => {
+      return useMutation(getConfirmAutoImportMutationOptions(options));
+    }
+
+export const getDisconnectGmailUrl = () => {
+
+
+
+
+  return `/api/auto-import/disconnect`
+}
+
+/**
+ * @summary Disconnect Gmail and delete stored tokens
+ */
+export const disconnectGmail = async ( options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDisconnectGmailUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getDisconnectGmailMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disconnectGmail>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof disconnectGmail>>, TError,void, TContext> => {
+
+const mutationKey = ['disconnectGmail'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof disconnectGmail>>, void> = () => {
+
+
+          return  disconnectGmail(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DisconnectGmailMutationResult = NonNullable<Awaited<ReturnType<typeof disconnectGmail>>>
+
+    export type DisconnectGmailMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Disconnect Gmail and delete stored tokens
+ */
+export const useDisconnectGmail = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disconnectGmail>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof disconnectGmail>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getDisconnectGmailMutationOptions(options));
     }
 
