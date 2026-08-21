@@ -51,4 +51,4 @@ Thumbs.db
 # Local development
 artifacts/api-server/.env
 artifacts/subtrack/.env.local
-backend.log
+backend.log.freebuff/
