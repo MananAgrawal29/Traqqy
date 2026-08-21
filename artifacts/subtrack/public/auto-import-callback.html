@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traqqy — Gmail Connection</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color: #16a34a; }
+    .error { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner" id="spinner"></div>
+    <p id="message">Connecting your Gmail...</p>
+  </div>
+
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('status');
+      const message = params.get('message');
+      const spinner = document.getElementById('spinner');
+      const messageEl = document.getElementById('message');
+
+      if (status === 'success') {
+        spinner.style.display = 'none';
+        messageEl.className = 'success';
+        messageEl.textContent = 'Gmail connected successfully!';
+
+        // Notify the opener window
+        if (window.opener) {
+          window.opener.postMessage({ type: 'traqqy-gmail-auth', status: 'success' }, '*');
+        }
+
+        // Close after a short delay
+        setTimeout(function() { window.close(); }, 1500);
+      } else {
+        spinner.style.display = 'none';
+        messageEl.className = 'error';
+        messageEl.textContent = message || 'Failed to connect Gmail. Please try again.';
+
+        // Notify the opener window
+        if (window.opener) {
+          window.opener.postMessage({ type: 'traqqy-gmail-auth', status: 'error', message: message }, '*');
+        }
+
+        // Close after a delay
+        setTimeout(function() { window.close(); }, 3000);
+      }
+    })();
+  </script>
+</body>
+</html>

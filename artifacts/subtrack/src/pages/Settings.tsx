@@ -1,10 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { 
-  useGetSettings, 
-  useUpdateSettings, 
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  useGetSettings,
+  useUpdateSettings,
   useDeleteAccount,
   getGetSettingsQueryKey,
-  type UserSettingsUpdateTheme
+  getAutoImportStatus,
+  startAutoImportScan,
+  getScanStatus,
+  getScanResults,
+  confirmAutoImport,
+  type UserSettingsUpdateTheme,
+  type AutoImportStatus,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/react";
@@ -17,6 +23,194 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Mail } from "lucide-react";
+
+import ConnectionCard from "@/components/auto-import/ConnectionCard";
+import ScanProgress from "@/components/auto-import/ScanProgress";
+import ResultsReview from "@/components/auto-import/ResultsReview";
+import type { Candidate } from "@/components/auto-import/CandidateCard";
+import ImportSummary from "@/components/auto-import/ImportSummary";
+
+// ── Auto Import types ──
+// AutoImportStatus is imported from @workspace/api-client-react
+
+
+interface ScanStatus {
+  scanId: string;
+  status: string;
+  progress: {
+    emailsFound: number;
+    emailsProcessed: number;
+    candidatesFound: number;
+  };
+  startedAt: string | null;
+  updatedAt: string | null;
+  errorMessage: string | null;
+}
+
+interface ScanResults {
+  scanId: string;
+  candidates: Candidate[];
+  summary: {
+    totalScanned: number;
+    candidatesFound: number;
+    highConfidence: number;
+    mediumConfidence: number;
+    lowConfidence: number;
+    duplicatesFound: number;
+  };
+}
+
+interface ImportResult {
+  imported: Array<{ subscriptionId: number; name: string; candidateId: string }>;
+  failed: Array<{ candidateId: string; reason: string }>;
+}
+
+// ── Auto Import Tab Component ──
+
+function AutoImportTab() {
+  const [status, setStatus] = useState<AutoImportStatus | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [scanId, setScanId] = useState<string | null>(null);
+  const [scanStatus, setScanStatus] = useState<ScanStatus | null>(null);
+  const [scanResults, setScanResults] = useState<ScanResults | null>(null);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  // Fetch connection status
+  const fetchStatus = useCallback(async () => {
+    try {
+      const data = await getAutoImportStatus();
+      setStatus(data);
+    } catch {
+      // Silently fail
+    } finally {
+      setStatusLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  // Poll scan status
+  useEffect(() => {
+    if (!scanId || !isScanning) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const data = await getScanStatus(scanId) as unknown as ScanStatus;
+        setScanStatus(data);
+
+        if (data.status === "complete" || data.status === "failed") {
+          setIsScanning(false);
+          clearInterval(interval);
+
+          if (data.status === "complete") {
+            // Fetch results
+            const results = await getScanResults(scanId) as unknown as ScanResults;
+            setScanResults(results);
+          } else {
+            toast.error(data.errorMessage || "Scan failed");
+          }
+        }
+      } catch {
+        // Retry on next interval
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [scanId, isScanning]);
+
+  const handleScan = useCallback(async () => {
+    setIsScanning(true);
+    setScanResults(null);
+    setImportResult(null);
+    setScanStatus(null);
+
+    try {
+      const data = await startAutoImportScan({ monthsBack: 12 });
+      setScanId(data.scanId ?? null);
+    } catch {
+      toast.error("Failed to start scan");
+      setIsScanning(false);
+    }
+  }, []);
+
+  const handleConfirm = useCallback(
+    async (selectedIds: string[]) => {
+      if (!scanId) return;
+      setIsConfirming(true);
+
+      try {
+        const data = await confirmAutoImport({ scanId, candidateIds: selectedIds, overrides: {} });
+        setImportResult(data as unknown as ImportResult);
+        setScanResults(null);
+
+        const imported = data.imported ?? [];
+        const failed = data.failed ?? [];
+        if (imported.length > 0) {
+          toast.success(`${imported.length} subscription(s) imported!`);
+        }
+        if (failed.length > 0) {
+          toast.error(`${failed.length} import(s) failed`);
+        }
+      } catch {
+        toast.error("Failed to import subscriptions");
+      } finally {
+        setIsConfirming(false);
+      }
+    },
+    [scanId],
+  );
+
+  if (statusLoading) {
+    return <div className="text-muted-foreground">Loading auto-import status...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <ConnectionCard
+        connected={status?.connected ?? false}
+        email={status?.email ?? null}
+        lastScanAt={status?.lastScanAt ?? null}
+        onScan={handleScan}
+        onDisconnect={() => window.location.reload()}
+        isScanning={isScanning}
+      />
+
+      {isScanning && scanStatus && (
+        <ScanProgress
+          status={scanStatus.status}
+          emailsFound={scanStatus.progress.emailsFound}
+          emailsProcessed={scanStatus.progress.emailsProcessed}
+          candidatesFound={scanStatus.progress.candidatesFound}
+        />
+      )}
+
+      {scanResults && (
+        <ResultsReview
+          candidates={scanResults.candidates}
+          summary={scanResults.summary}
+          onConfirm={handleConfirm}
+          onRescan={handleScan}
+          isConfirming={isConfirming}
+        />
+      )}
+
+      {importResult && (
+        <ImportSummary
+          imported={importResult.imported}
+          failed={importResult.failed}
+          onRescan={handleScan}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Main Settings Page ──
 
 export default function Settings() {
   const queryClient = useQueryClient();
@@ -83,6 +277,10 @@ export default function Settings() {
         <TabsList className="mb-6">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="auto-import">
+            <Mail className="h-4 w-4 mr-1.5" />
+            Auto Import
+          </TabsTrigger>
           <TabsTrigger value="danger" className="text-destructive data-[state=active]:text-destructive">Danger Zone</TabsTrigger>
         </TabsList>
 
@@ -124,7 +322,7 @@ export default function Settings() {
           <Card>
             <CardHeader>
               <CardTitle>Appearance</CardTitle>
-              <CardDescription>Customize how SubTrack looks.</CardDescription>
+              <CardDescription>Customize how Traqqy looks.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -145,6 +343,10 @@ export default function Settings() {
               <Button onClick={handleSaveAppearance} disabled={updateMut.isPending}>Save Preferences</Button>
             </CardFooter>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="auto-import" className="space-y-6">
+          <AutoImportTab />
         </TabsContent>
 
         <TabsContent value="danger" className="space-y-6">
