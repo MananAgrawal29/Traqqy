@@ -270,7 +270,7 @@ export default function Settings() {
     <div className="p-6 md:p-10 space-y-8 max-w-4xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your account and preferences.</p>
+        <p className="text-muted-foreground mt-1 text-sm">Manage your account and preferences.</p>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
@@ -284,13 +284,13 @@ export default function Settings() {
           <TabsTrigger value="danger" className="text-destructive data-[state=active]:text-destructive">Danger Zone</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Details</CardTitle>
-              <CardDescription>How we identify you in the app.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <TabsContent value="profile" className="space-y-4">
+          <section className="rounded-xl bg-card p-6 space-y-4">
+            <div>
+              <h3 className="font-semibold">Profile Details</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">How we identify you in the app.</p>
+            </div>
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Display Name</Label>
                 <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Jane Doe" />
@@ -311,20 +311,18 @@ export default function Settings() {
                 </Select>
                 <p className="text-xs text-muted-foreground">This is the currency used for your dashboard summaries.</p>
               </div>
-            </CardContent>
-            <CardFooter className="border-t px-6 py-4">
               <Button onClick={handleSaveProfile} disabled={updateMut.isPending}>Save Changes</Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </section>
         </TabsContent>
 
-        <TabsContent value="appearance" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Appearance</CardTitle>
-              <CardDescription>Customize how Traqqy looks.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <TabsContent value="appearance" className="space-y-4">
+          <section className="rounded-xl bg-card p-6 space-y-4">
+            <div>
+              <h3 className="font-semibold">Appearance</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">Customize how Traqqy looks.</p>
+            </div>
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Theme</Label>
                 <Select value={theme} onValueChange={(v) => setTheme(v as UserSettingsUpdateTheme)}>
@@ -338,34 +336,30 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
               </div>
-            </CardContent>
-            <CardFooter className="border-t px-6 py-4">
               <Button onClick={handleSaveAppearance} disabled={updateMut.isPending}>Save Preferences</Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </section>
         </TabsContent>
 
-        <TabsContent value="auto-import" className="space-y-6">
+        <TabsContent value="auto-import" className="space-y-4">
           <AutoImportTab />
         </TabsContent>
 
-        <TabsContent value="danger" className="space-y-6">
-          <Card className="border-destructive/50 bg-destructive/5">
-            <CardHeader>
-              <CardTitle className="text-destructive">Delete Account</CardTitle>
-              <CardDescription>
+        <TabsContent value="danger" className="space-y-4">
+          <section className="rounded-xl bg-card border border-destructive/10 p-6">
+            <div>
+              <h3 className="font-semibold text-destructive">Delete Account</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Permanently remove your account and all associated data. This action cannot be undone.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm font-medium text-destructive mb-4">
-                Warning: This will delete all your tracked subscriptions, reminders, and historical data.
               </p>
-              <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-                Delete My Account
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
+            <p className="text-sm text-destructive/80 mt-3">
+              This will delete all your tracked subscriptions, reminders, and historical data.
+            </p>
+            <Button variant="destructive" onClick={() => setDeleteOpen(true)} className="mt-4">
+              Delete My Account
+            </Button>
+          </section>
         </TabsContent>
       </Tabs>
 

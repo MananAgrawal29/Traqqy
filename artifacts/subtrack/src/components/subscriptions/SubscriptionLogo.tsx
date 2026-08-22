@@ -110,8 +110,9 @@ export default function SubscriptionLogo({
       <div
         className={cn(
           sizeClasses[size],
-          "rounded-full flex items-center justify-center font-bold text-white shrink-0",
+          "rounded-full flex items-center justify-center font-bold text-white shrink-0 transition-shadow duration-200",
           fallbackTextClasses[size],
+          "hover:shadow-lg hover:shadow-black/20",
           className
         )}
         style={{ backgroundColor: stringToColor(name) }}

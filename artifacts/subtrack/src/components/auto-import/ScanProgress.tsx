@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { motion } from "framer-motion";
+import { Reveal } from "@/lib/motion";
 
 interface ScanProgressProps {
   status: string;
@@ -11,10 +11,10 @@ interface ScanProgressProps {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  queued: "Queued...",
-  searching: "Searching your inbox for subscription-related emails...",
-  analyzing: "Analyzing email content and extracting transaction data...",
-  scoring: "Detecting patterns and scoring candidates...",
+  queued: "Preparing...",
+  searching: "Searching your inbox...",
+  analyzing: "Looking for subscription patterns...",
+  scoring: "Evaluating what we found...",
   complete: "Scan complete!",
   failed: "Scan failed",
 };
@@ -35,35 +35,66 @@ export default function ScanProgress({
         : 50;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <Reveal>
+      <div className="rounded-xl bg-card p-6 space-y-5">
+        <div className="flex items-center gap-3">
           {isActive ? (
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
           ) : (
-            <div className={`h-5 w-5 rounded-full ${status === "complete" ? "bg-green-500" : "bg-red-500"}`} />
+            <div
+              className={`h-5 w-5 rounded-full ${
+                status === "complete" ? "bg-success" : "bg-destructive"
+              }`}
+            />
           )}
-          {STATUS_LABELS[status] || status}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Progress value={progressPercent} className="h-2" />
+          <div>
+            <h3 className="font-semibold">
+              {STATUS_LABELS[status] || status}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {emailsFound > 0
+                ? `${emailsProcessed} of ${emailsFound} emails scanned`
+                : "Starting scan..."}
+            </p>
+          </div>
+        </div>
 
+        {/* Progress bar */}
+        <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full bg-primary rounded-full"
+          />
+        </div>
+
+        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold font-mono">{emailsFound}</p>
+            <p className="text-2xl font-bold font-mono text-foreground">
+              {emailsFound}
+            </p>
             <p className="text-xs text-muted-foreground">Emails found</p>
           </div>
           <div>
-            <p className="text-2xl font-bold font-mono">{emailsProcessed}</p>
+            <p className="text-2xl font-bold font-mono text-foreground">
+              {emailsProcessed}
+            </p>
             <p className="text-xs text-muted-foreground">Processed</p>
           </div>
           <div>
-            <p className="text-2xl font-bold font-mono">{candidatesFound}</p>
-            <p className="text-xs text-muted-foreground">Candidates</p>
+            <p className="text-2xl font-bold font-mono text-primary">
+              {candidatesFound}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {candidatesFound === 1
+                ? "Discovery"
+                : "Discoveries"}
+            </p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Reveal>
   );
 }

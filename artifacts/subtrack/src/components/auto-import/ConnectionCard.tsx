@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, Unplug, ShieldCheck, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getGoogleAuthUrl, disconnectGmail } from "@workspace/api-client-react";
+import { Reveal } from "@/lib/motion";
 
 interface ConnectionCardProps {
   connected: boolean;
@@ -32,14 +32,12 @@ export default function ConnectionCard({
       const url = data.url;
       if (!url) throw new Error("No auth URL returned");
 
-      // Open popup
       const popup = window.open(
         url,
         "gmail-auth",
-        "width=500,height=600,scrollbars=yes,resizable=yes",
+        "width=500,height=600,scrollbars=yes,resizable=yes"
       );
 
-      // Listen for postMessage from callback
       const handler = (event: MessageEvent) => {
         if (event.data?.type === "traqqy-gmail-auth") {
           window.removeEventListener("message", handler);
@@ -55,7 +53,6 @@ export default function ConnectionCard({
       };
       window.addEventListener("message", handler);
 
-      // Cleanup if popup is closed manually
       const checkClosed = setInterval(() => {
         if (popup?.closed) {
           clearInterval(checkClosed);
@@ -63,7 +60,7 @@ export default function ConnectionCard({
           setConnecting(false);
         }
       }, 500);
-    } catch (err) {
+    } catch {
       toast.error("Failed to start Gmail connection");
       setConnecting(false);
     }
@@ -84,22 +81,27 @@ export default function ConnectionCard({
 
   if (!connected) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Connect Gmail
-          </CardTitle>
-          <CardDescription>
-            Connect your Gmail account to automatically detect subscriptions from your emails.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-            <ShieldCheck className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
-            <div className="text-sm space-y-1">
-              <p className="font-medium">Privacy-first approach</p>
-              <ul className="text-muted-foreground space-y-0.5">
+      <Reveal>
+        <div className="rounded-xl bg-card p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Connect Gmail</h3>
+              <p className="text-sm text-muted-foreground">
+                Automatically detect subscriptions from your emails.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/10">
+            <ShieldCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p className="font-medium text-foreground">
+                Read-only access
+              </p>
+              <ul className="space-y-0.5">
                 <li>• Traqqy only reads email headers and snippets</li>
                 <li>• Your full email content is never stored</li>
                 <li>• Only subscription-relevant data is kept</li>
@@ -107,12 +109,12 @@ export default function ConnectionCard({
               </ul>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Traqqy will request read-only access to your Gmail. It cannot send, modify, or delete emails.
-          </p>
-        </CardContent>
-        <CardFooter>
-          <Button onClick={handleConnect} disabled={connecting} className="gap-2">
+
+          <Button
+            onClick={handleConnect}
+            disabled={connecting}
+            className="gap-2"
+          >
             {connecting ? (
               <>
                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -125,56 +127,61 @@ export default function ConnectionCard({
               </>
             )}
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </Reveal>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-green-600" />
-          Gmail Connected
-        </CardTitle>
-        <CardDescription>
-          Your Gmail account is connected and ready for scanning.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-          <div className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
+    <Reveal>
+      <div className="rounded-xl bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 text-success">
+            <Mail className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Gmail Connected</h3>
+            <p className="text-sm text-muted-foreground">
+              Ready for scanning.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-success/5 border border-success/10">
+          <div className="h-2 w-2 rounded-full bg-success shrink-0" />
           <div>
             <p className="text-sm font-medium">{email}</p>
             {lastScanAt && (
               <p className="text-xs text-muted-foreground">
-                Last scan: {new Date(lastScanAt).toLocaleDateString()}
+                Last scan:{" "}
+                {new Date(lastScanAt).toLocaleDateString()}
               </p>
             )}
           </div>
         </div>
-      </CardContent>
-      <CardFooter className="flex gap-2">
-        <Button onClick={onScan} disabled={isScanning} className="gap-2">
-          {isScanning ? (
-            <>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              Scanning...
-            </>
-          ) : (
-            "Scan for Subscriptions"
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleDisconnect}
-          disabled={disconnecting}
-          className="gap-2 text-destructive hover:text-destructive"
-        >
-          <Unplug className="h-4 w-4" />
-          Disconnect
-        </Button>
-      </CardFooter>
-    </Card>
+
+        <div className="flex gap-2">
+          <Button onClick={onScan} disabled={isScanning} className="gap-2">
+            {isScanning ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                Scanning...
+              </>
+            ) : (
+              "Scan for Subscriptions"
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDisconnect}
+            disabled={disconnecting}
+            className="gap-2 text-destructive hover:text-destructive"
+          >
+            <Unplug className="h-4 w-4" />
+            Disconnect
+          </Button>
+        </div>
+      </div>
+    </Reveal>
   );
 }

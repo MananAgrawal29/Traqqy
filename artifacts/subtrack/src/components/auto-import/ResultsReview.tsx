@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { CheckCheck, Download, RefreshCw } from "lucide-react";
 import CandidateCard, { type Candidate } from "./CandidateCard";
+import { Reveal, staggerContainer, staggerItem } from "@/lib/motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ResultsReviewProps {
   candidates: Candidate[];
@@ -34,7 +34,7 @@ export default function ResultsReview({
 
   const handleToggle = (id: string, selected: boolean) => {
     setItems((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, selected } : c)),
+      prev.map((c) => (c.id === id ? { ...c, selected } : c))
     );
   };
 
@@ -51,89 +51,141 @@ export default function ResultsReview({
   };
 
   const handleConfirm = () => {
-    const selectedIds = items.filter((c) => c.selected).map((c) => c.id);
+    const selectedIds = items
+      .filter((c) => c.selected)
+      .map((c) => c.id);
     onConfirm(selectedIds);
   };
 
   if (items.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-16 text-center">
+      <Reveal>
+        <div className="rounded-xl bg-card p-12 text-center">
           <p className="text-muted-foreground mb-4">
             No subscription candidates found in your emails.
           </p>
-          <Button variant="outline" onClick={onRescan} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={onRescan}
+            className="gap-2"
+          >
             <RefreshCw className="h-4 w-4" />
             Scan Again
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </Reveal>
     );
   }
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
+      {/* Summary header */}
+      <Reveal>
+        <div className="rounded-xl bg-card p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                Detected Subscriptions
-                <Badge variant="secondary">{items.length}</Badge>
-              </CardTitle>
-              <CardDescription>
-                Review and select which subscriptions to import. Scanned{" "}
-                {summary.totalScanned} emails.
-              </CardDescription>
+              <h3 className="text-lg font-semibold">
+                We found{" "}
+                <span className="text-primary">{items.length}</span>{" "}
+                {items.length === 1 ? "subscription" : "subscriptions"}{" "}
+                you might be paying for
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Scanned {summary.totalScanned} emails. Review and
+                select which to import.
+              </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
+
+          {/* Confidence summary */}
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground">
-              <span className="font-medium text-green-600">{summary.highConfidence}</span> high
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-medium text-yellow-600">{summary.mediumConfidence}</span> medium
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-medium text-orange-600">{summary.lowConfidence}</span> low
-            </span>
+            {summary.highConfidence > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-success" />
+                <span className="font-medium text-foreground">
+                  {summary.highConfidence}
+                </span>{" "}
+                <span className="text-muted-foreground">strong</span>
+              </span>
+            )}
+            {summary.mediumConfidence > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-warning" />
+                <span className="font-medium text-foreground">
+                  {summary.mediumConfidence}
+                </span>{" "}
+                <span className="text-muted-foreground">
+                  likely
+                </span>
+              </span>
+            )}
+            {summary.lowConfidence > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-muted-foreground" />
+                <span className="font-medium text-foreground">
+                  {summary.lowConfidence}
+                </span>{" "}
+                <span className="text-muted-foreground">
+                  uncertain
+                </span>
+              </span>
+            )}
             {summary.duplicatesFound > 0 && (
               <span className="text-muted-foreground">
-                <span className="font-medium text-yellow-600">{summary.duplicatesFound}</span> duplicates
+                {summary.duplicatesFound} duplicate
+                {summary.duplicatesFound !== 1 ? "s" : ""} found
               </span>
             )}
           </div>
-          <Separator />
+
+          {/* Select actions */}
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={handleSelectAll}>
-              <CheckCheck className="h-4 w-4 mr-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSelectAll}
+              className="text-xs"
+            >
+              <CheckCheck className="h-3.5 w-3.5 mr-1" />
               Select All
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleDeselectAll}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDeselectAll}
+              className="text-xs"
+            >
               Deselect All
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </Reveal>
 
-      {items.map((candidate) => (
-        <CandidateCard
-          key={candidate.id}
-          candidate={candidate}
-          onToggle={handleToggle}
-          onDismiss={handleDismiss}
-        />
-      ))}
+      {/* Candidate list */}
+      <AnimatePresence mode="popLayout">
+        {items.map((candidate) => (
+          <CandidateCard
+            key={candidate.id}
+            candidate={candidate}
+            onToggle={handleToggle}
+            onDismiss={handleDismiss}
+          />
+        ))}
+      </AnimatePresence>
 
-      <Card className="sticky bottom-4 border-primary/20 shadow-lg">
-        <CardContent className="p-4 flex items-center justify-between">
+      {/* Sticky import bar */}
+      <Reveal>
+        <div className="sticky bottom-4 rounded-xl bg-card border border-primary/10 p-4 flex items-center justify-between shadow-lg">
           <p className="text-sm text-muted-foreground">
-            {selectedCount} subscription{selectedCount !== 1 ? "s" : ""} selected for import
+            {selectedCount} subscription
+            {selectedCount !== 1 ? "s" : ""} selected for import
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onRescan} className="gap-2">
+            <Button
+              variant="outline"
+              onClick={onRescan}
+              className="gap-2"
+            >
               <RefreshCw className="h-4 w-4" />
               Scan Again
             </Button>
@@ -155,8 +207,8 @@ export default function ResultsReview({
               )}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </Reveal>
     </div>
   );
 }
