@@ -73,10 +73,15 @@ export async function sendReminderEmail(params: SendReminderParams): Promise<voi
 </body>
 </html>`;
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: [to],
     subject,
     html,
   });
+
+  if (error || !data?.id) {
+    const message = error?.message || 'Unknown Resend error';
+    throw new Error('Resend rejected the email: ' + message);
+  }
 }
