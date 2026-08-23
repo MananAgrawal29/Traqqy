@@ -33,7 +33,8 @@ router.get("/", requireAuth, async (req, res) => {
   const userId = getUserId(req);
   try {
     const settings = await getOrCreateSettings(userId);
-    res.json({ ...settings, userId: settings.clerkId });
+    const healthPrefs = settings.healthPreferences ? JSON.parse(settings.healthPreferences) : null;
+    res.json({ ...settings, healthPreferences: healthPrefs, userId: settings.clerkId });
   } catch (err) {
     req.log.error({ err }, "Failed to get settings");
     res.status(500).json({ error: "Internal server error" });
@@ -42,7 +43,7 @@ router.get("/", requireAuth, async (req, res) => {
 
 router.patch("/", requireAuth, async (req, res) => {
   const userId = getUserId(req);
-  const { displayName, currency, theme, timezone } = req.body;
+  const { displayName, currency, theme, timezone, healthPreferences } = req.body;
   try {
     await getOrCreateSettings(userId);
     const updates: Record<string, any> = {};
@@ -50,13 +51,15 @@ router.patch("/", requireAuth, async (req, res) => {
     if (currency !== undefined)    updates.currency = currency;
     if (theme !== undefined)       updates.theme = theme;
     if (timezone !== undefined)    updates.timezone = timezone;
+    if (healthPreferences !== undefined) updates.healthPreferences = JSON.stringify(healthPreferences);
 
     const [updated] = await db
       .update(userSettingsTable)
       .set(updates)
       .where(eq(userSettingsTable.clerkId, userId))
       .returning();
-    res.json({ ...updated, userId: updated.clerkId });
+    const patchedPrefs = updated.healthPreferences ? JSON.parse(updated.healthPreferences) : null;
+    res.json({ ...updated, healthPreferences: patchedPrefs, userId: updated.clerkId });
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
   }

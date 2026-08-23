@@ -65,6 +65,15 @@ async function loadIcon(slug: string): Promise<CachedIcon | null> {
   }
 }
 
+function localLogoPath(icon: string): string | null {
+  if (!icon.startsWith("local:")) return null;
+
+  const assetName = icon.slice("local:".length);
+  if (!/^[a-z0-9-]+$/.test(assetName)) return null;
+
+  return `/logos/${assetName}.svg`;
+}
+
 export default function SubscriptionLogo({
   name,
   icon,
@@ -79,9 +88,10 @@ export default function SubscriptionLogo({
     if (!icon) return null;
     return icon.trim().toLowerCase();
   }, [icon]);
+  const localPath = normalizedIcon ? localLogoPath(normalizedIcon) : null;
 
   useEffect(() => {
-    if (!normalizedIcon) {
+    if (!normalizedIcon || localPath) {
       setSvg(null);
       setError(false);
       return;
@@ -101,9 +111,24 @@ export default function SubscriptionLogo({
     return () => {
       cancelled = true;
     };
-  }, [normalizedIcon]);
+  }, [normalizedIcon, localPath]);
 
   const initial = name.charAt(0).toUpperCase() || "?";
+
+  if (localPath && !error) {
+    return (
+      <img
+        className={cn(
+          sizeClasses[size],
+          "shrink-0 object-contain",
+          className
+        )}
+        src={localPath}
+        alt={name}
+        onError={() => setError(true)}
+      />
+    );
+  }
 
   if (!normalizedIcon || error || loading) {
     return (

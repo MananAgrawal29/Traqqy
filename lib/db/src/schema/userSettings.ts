@@ -10,6 +10,7 @@ export const userSettingsTable = pgTable("user_settings", {
   currency: text("currency").notNull().default("USD"),
   theme: text("theme").notNull().default("system"),
   timezone: text("timezone").notNull().default("UTC"),
+  healthPreferences: text("health_preferences"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

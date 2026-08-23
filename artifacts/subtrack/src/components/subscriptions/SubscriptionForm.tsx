@@ -333,7 +333,7 @@ export default function SubscriptionForm({
                   <FormItem>
                     <FormLabel>Icon Slug</FormLabel>
                     <FormControl>
-                      <Input placeholder="simple-icons slug, e.g. netflix" {...field} value={field.value || ""} />
+                      <Input placeholder="simple-icons slug or local:asset-name" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

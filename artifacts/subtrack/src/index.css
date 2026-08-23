@@ -190,3 +190,12 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Hidden scrollbar for mobile nav */
+.nav-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nav-scroll::-webkit-scrollbar {
+  display: none;
+}

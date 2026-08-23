@@ -25,6 +25,7 @@ import Analytics from '@/pages/Analytics';
 import CalendarPage from '@/pages/Calendar';
 import Reminders from '@/pages/Reminders';
 import Settings from '@/pages/Settings';
+import Health from '@/pages/Health';
 import Shell from '@/components/layout/Shell';
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -199,6 +200,7 @@ function Router() {
           <Route path="/calendar"><ProtectedRoute component={CalendarPage} /></Route>
           <Route path="/reminders"><ProtectedRoute component={Reminders} /></Route>
           <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
+          <Route path="/health"><ProtectedRoute component={Health} /></Route>
           
           <Route>
             <div className="flex min-h-[100dvh] items-center justify-center bg-background">

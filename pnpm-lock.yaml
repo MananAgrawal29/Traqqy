@@ -578,6 +578,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.5
+      simple-icons:
+        specifier: ^16.26.0
+        version: 16.26.0
 
   lib/db:
     dependencies:

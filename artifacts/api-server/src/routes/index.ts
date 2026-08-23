@@ -8,6 +8,7 @@ import analyticsRouter from "./analytics";
 import calendarRouter from "./calendar";
 import settingsRouter from "./settings";
 import autoImportRouter from "./auto-import";
+import walletHealthRouter from "./wallet-health";
 import { seedDefaultCategories } from "./categories";
 
 const router = Router();
@@ -24,5 +25,6 @@ router.use("/analytics", analyticsRouter);
 router.use("/calendar", calendarRouter);
 router.use("/settings", settingsRouter);
 router.use("/auto-import", autoImportRouter);
+router.use("/wallet-health", walletHealthRouter);
 
 export default router;

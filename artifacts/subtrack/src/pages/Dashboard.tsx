@@ -17,6 +17,8 @@ import SubscriptionLogo from "@/components/subscriptions/SubscriptionLogo";impor
 } from "@/lib/motion";
 import { motion } from "framer-motion";
 import { AmbientGlow, Sparkle, DoodleRupee, DoodleStar } from "@/components/doodles";
+import { useQuery } from "@tanstack/react-query";
+import { customFetch } from "@workspace/api-client-react/custom-fetch";
 
 function formatCurrency(amount: number, currency: string = "INR") {
   return new Intl.NumberFormat("en-US", {
@@ -31,6 +33,7 @@ export default function Dashboard() {
     useGetUpcomingRenewals();
   const { data: activities, isLoading: loadingActivities } =
     useGetRecentActivity();
+  const { data: healthData } = useQuery<{ score: number; status: string }>({ queryKey: ["wallet-health"], queryFn: async () => { return await customFetch<{ score: number; status: string }>("/api/wallet-health"); } });
   const { data: categorySpends, isLoading: loadingCategories } =
     useGetSpendingByCategory();
 
@@ -70,6 +73,26 @@ export default function Dashboard() {
           <Sparkle className="absolute top-0 right-0 hidden lg:block" size={10} color="hsl(38 90% 55%)" delay={0.5} />
         </div>
       </Reveal>
+
+      {/* ── Wallet Health Card ── */}
+      {healthData && (
+        <Reveal delay={0.05}>
+          <Link href="/health" className="block rounded-xl border border-border bg-card p-5 hover:border-primary/30 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10">
+                  <span className="text-xl font-bold font-mono text-primary">{healthData.score}</span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Wallet Health</p>
+                  <p className="text-xs text-muted-foreground capitalize">{healthData.status.replace("_", " ")} &#10022;</p>
+                </div>
+              </div>
+              <span className="text-xs font-medium text-primary flex items-center gap-1">View Health <ArrowRight className="h-3 w-3" /></span>
+            </div>
+          </Link>
+        </Reveal>
+      )}
 
       {/* ── Upcoming renewals ────────────────────────────────────── */}
       <Reveal delay={0.1}>

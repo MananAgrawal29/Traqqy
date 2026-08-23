@@ -350,6 +350,8 @@ export interface UserSettings {
   currency: string;
   theme: UserSettingsTheme;
   timezone: string;
+  /** @nullable */
+  healthPreferences?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -369,6 +371,7 @@ export interface UserSettingsUpdate {
   currency?: string;
   theme?: UserSettingsUpdateTheme;
   timezone?: string;
+  healthPreferences?: Record<string, unknown> | null;
 }
 
 /**
