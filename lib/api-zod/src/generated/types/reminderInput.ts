@@ -6,9 +6,27 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ReminderInputDaysBefore } from './reminderInputDaysBefore';
+import type { ReminderInputStatus } from './reminderInputStatus';
 
 export interface ReminderInput {
   subscriptionId: number;
   daysBefore: ReminderInputDaysBefore;
+  /**
+     * When the reminder is scheduled to be sent (ISO timestamp)
+     * @nullable
+     */
+  scheduledSendAt?: string | null;
+  /** Current status of the reminder */
+  status?: ReminderInputStatus;
+  /**
+     * When the reminder was actually sent
+     * @nullable
+     */
+  sentAt?: string | null;
+  /**
+     * Last error message if send failed
+     * @nullable
+     */
+  error?: string | null;
   isEnabled?: boolean;
 }

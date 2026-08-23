@@ -136,6 +136,20 @@ export interface CategoryUpdate {
   icon?: string;
 }
 
+/**
+ * Current status of the reminder
+ */
+export type ReminderStatus = typeof ReminderStatus[keyof typeof ReminderStatus];
+
+
+export const ReminderStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  sent: 'sent',
+  failed: 'failed',
+  cancelled: 'cancelled',
+} as const;
+
 export interface Reminder {
   id: number;
   userId: string;
@@ -144,6 +158,23 @@ export interface Reminder {
   subscriptionName?: string | null;
   /** Days before renewal to send reminder (1, 3, 7) */
   daysBefore: number;
+  /**
+     * When the reminder is scheduled to be sent (ISO timestamp)
+     * @nullable
+     */
+  scheduledSendAt?: string | null;
+  /** Current status of the reminder */
+  status?: ReminderStatus;
+  /**
+     * When the reminder was actually sent
+     * @nullable
+     */
+  sentAt?: string | null;
+  /**
+     * Last error message if send failed
+     * @nullable
+     */
+  error?: string | null;
   isEnabled: boolean;
   createdAt: string;
 }
@@ -159,9 +190,40 @@ export const ReminderInputDaysBefore = {
   NUMBER_30: 30,
 } as const;
 
+/**
+ * Current status of the reminder
+ */
+export type ReminderInputStatus = typeof ReminderInputStatus[keyof typeof ReminderInputStatus];
+
+
+export const ReminderInputStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  sent: 'sent',
+  failed: 'failed',
+  cancelled: 'cancelled',
+} as const;
+
 export interface ReminderInput {
   subscriptionId: number;
   daysBefore: ReminderInputDaysBefore;
+  /**
+     * When the reminder is scheduled to be sent (ISO timestamp)
+     * @nullable
+     */
+  scheduledSendAt?: string | null;
+  /** Current status of the reminder */
+  status?: ReminderInputStatus;
+  /**
+     * When the reminder was actually sent
+     * @nullable
+     */
+  sentAt?: string | null;
+  /**
+     * Last error message if send failed
+     * @nullable
+     */
+  error?: string | null;
   isEnabled?: boolean;
 }
 
@@ -176,8 +238,39 @@ export const ReminderUpdateDaysBefore = {
   NUMBER_30: 30,
 } as const;
 
+/**
+ * Current status of the reminder
+ */
+export type ReminderUpdateStatus = typeof ReminderUpdateStatus[keyof typeof ReminderUpdateStatus];
+
+
+export const ReminderUpdateStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  sent: 'sent',
+  failed: 'failed',
+  cancelled: 'cancelled',
+} as const;
+
 export interface ReminderUpdate {
   daysBefore?: ReminderUpdateDaysBefore;
+  /**
+     * When the reminder is scheduled to be sent (ISO timestamp)
+     * @nullable
+     */
+  scheduledSendAt?: string | null;
+  /** Current status of the reminder */
+  status?: ReminderUpdateStatus;
+  /**
+     * When the reminder was actually sent
+     * @nullable
+     */
+  sentAt?: string | null;
+  /**
+     * Last error message if send failed
+     * @nullable
+     */
+  error?: string | null;
   isEnabled?: boolean;
 }
 
@@ -520,6 +613,13 @@ export const ListSubscriptionsSortOrder = {
   asc: 'asc',
   desc: 'desc',
 } as const;
+
+export type ProcessReminders200 = {
+  processed?: number;
+  sent?: number;
+  failed?: number;
+  recovered?: number;
+};
 
 export type GetCalendarEventsParams = {
 year: number;

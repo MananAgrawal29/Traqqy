@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { subscriptionsTable, categoriesTable } from "@workspace/db";
 import { eq, and, ilike, gte, lte, or, asc, desc } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
+import { recalculateRemindersForSubscription } from "../lib/scheduling";
 import { calcEquivalents, daysUntil } from "../lib/billing";
 import type { BillingCycle } from "../lib/billing";
 

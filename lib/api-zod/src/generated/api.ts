@@ -332,6 +332,10 @@ export const ListRemindersResponseItem = zod.object({
   "subscriptionId": zod.number(),
   "subscriptionName": zod.string().nullish(),
   "daysBefore": zod.number().describe('Days before renewal to send reminder (1, 3, 7)'),
+  "scheduledSendAt": zod.string().nullish().describe('When the reminder is scheduled to be sent (ISO timestamp)'),
+  "status": zod.enum(['pending', 'processing', 'sent', 'failed', 'cancelled']).optional().describe('Current status of the reminder'),
+  "sentAt": zod.string().nullish().describe('When the reminder was actually sent'),
+  "error": zod.string().nullish().describe('Last error message if send failed'),
   "isEnabled": zod.boolean(),
   "createdAt": zod.string()
 })
@@ -346,6 +350,10 @@ export const createReminderBodyIsEnabledDefault = true;
 export const CreateReminderBody = zod.object({
   "subscriptionId": zod.number(),
   "daysBefore": zod.union([zod.literal(1),zod.literal(3),zod.literal(7),zod.literal(14),zod.literal(30)]),
+  "scheduledSendAt": zod.string().nullish().describe('When the reminder is scheduled to be sent (ISO timestamp)'),
+  "status": zod.enum(['pending', 'processing', 'sent', 'failed', 'cancelled']).optional().describe('Current status of the reminder'),
+  "sentAt": zod.string().nullish().describe('When the reminder was actually sent'),
+  "error": zod.string().nullish().describe('Last error message if send failed'),
   "isEnabled": zod.boolean().default(createReminderBodyIsEnabledDefault)
 })
 
@@ -355,6 +363,10 @@ export const CreateReminderResponse = zod.object({
   "subscriptionId": zod.number(),
   "subscriptionName": zod.string().nullish(),
   "daysBefore": zod.number().describe('Days before renewal to send reminder (1, 3, 7)'),
+  "scheduledSendAt": zod.string().nullish().describe('When the reminder is scheduled to be sent (ISO timestamp)'),
+  "status": zod.enum(['pending', 'processing', 'sent', 'failed', 'cancelled']).optional().describe('Current status of the reminder'),
+  "sentAt": zod.string().nullish().describe('When the reminder was actually sent'),
+  "error": zod.string().nullish().describe('Last error message if send failed'),
   "isEnabled": zod.boolean(),
   "createdAt": zod.string()
 })
@@ -369,6 +381,10 @@ export const UpdateReminderParams = zod.object({
 
 export const UpdateReminderBody = zod.object({
   "daysBefore": zod.union([zod.literal(1),zod.literal(3),zod.literal(7),zod.literal(14),zod.literal(30)]).optional(),
+  "scheduledSendAt": zod.string().nullish().describe('When the reminder is scheduled to be sent (ISO timestamp)'),
+  "status": zod.enum(['pending', 'processing', 'sent', 'failed', 'cancelled']).optional().describe('Current status of the reminder'),
+  "sentAt": zod.string().nullish().describe('When the reminder was actually sent'),
+  "error": zod.string().nullish().describe('Last error message if send failed'),
   "isEnabled": zod.boolean().optional()
 })
 
@@ -378,6 +394,10 @@ export const UpdateReminderResponse = zod.object({
   "subscriptionId": zod.number(),
   "subscriptionName": zod.string().nullish(),
   "daysBefore": zod.number().describe('Days before renewal to send reminder (1, 3, 7)'),
+  "scheduledSendAt": zod.string().nullish().describe('When the reminder is scheduled to be sent (ISO timestamp)'),
+  "status": zod.enum(['pending', 'processing', 'sent', 'failed', 'cancelled']).optional().describe('Current status of the reminder'),
+  "sentAt": zod.string().nullish().describe('When the reminder was actually sent'),
+  "error": zod.string().nullish().describe('Last error message if send failed'),
   "isEnabled": zod.boolean(),
   "createdAt": zod.string()
 })
@@ -391,6 +411,22 @@ export const DeleteReminderParams = zod.object({
 })
 
 export const DeleteReminderResponse = zod.void()
+
+
+/**
+ * Processes all pending reminders that are due. Requires x-reminder-secret header.
+ * @summary Process due reminders (called by external cron)
+ */
+export const ProcessRemindersHeader = zod.object({
+  "x-reminder-secret": zod.string()
+})
+
+export const ProcessRemindersResponse = zod.object({
+  "processed": zod.number().optional(),
+  "sent": zod.number().optional(),
+  "failed": zod.number().optional(),
+  "recovered": zod.number().optional()
+})
 
 
 /**

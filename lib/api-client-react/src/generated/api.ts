@@ -36,6 +36,7 @@ import type {
   HealthStatus,
   ListSubscriptionsParams,
   MonthlyTrend,
+  ProcessReminders200,
   Reminder,
   ReminderInput,
   ReminderUpdate,
@@ -1252,6 +1253,78 @@ export const useDeleteReminder = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteReminderMutationOptions(options));
+    }
+
+export const getProcessRemindersUrl = () => {
+
+
+
+
+  return `/api/reminders/process`
+}
+
+/**
+ * Processes all pending reminders that are due. Requires x-reminder-secret header.
+ * @summary Process due reminders (called by external cron)
+ */
+export const processReminders = async ( options?: RequestInit): Promise<ProcessReminders200> => {
+
+  return customFetch<ProcessReminders200>(getProcessRemindersUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getProcessRemindersMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processReminders>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof processReminders>>, TError,void, TContext> => {
+
+const mutationKey = ['processReminders'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof processReminders>>, void> = () => {
+
+
+          return  processReminders(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProcessRemindersMutationResult = NonNullable<Awaited<ReturnType<typeof processReminders>>>
+
+    export type ProcessRemindersMutationError = ErrorType<void>
+
+    /**
+ * @summary Process due reminders (called by external cron)
+ */
+export const useProcessReminders = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processReminders>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof processReminders>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getProcessRemindersMutationOptions(options));
     }
 
 export const getGetDashboardSummaryUrl = () => {

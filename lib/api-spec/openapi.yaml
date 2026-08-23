@@ -380,6 +380,38 @@ paths:
         "204":
           description: Deleted
 
+  /reminders/process:
+    post:
+      operationId: processReminders
+      tags: [reminders]
+      summary: Process due reminders (called by external cron)
+      description: Processes all pending reminders that are due. Requires x-reminder-secret header.
+      security: []
+      parameters:
+        - name: x-reminder-secret
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Processing result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processed:
+                    type: integer
+                  sent:
+                    type: integer
+                  failed:
+                    type: integer
+                  recovered:
+                    type: integer
+        "401":
+          description: Unauthorized (invalid or missing secret)
+
   # ──────────────────────────────
   # DASHBOARD
   # ──────────────────────────────
@@ -859,6 +891,19 @@ components:
         daysBefore:
           type: integer
           description: Days before renewal to send reminder (1, 3, 7)
+        scheduledSendAt:
+          type: ["string", "null"]
+          description: When the reminder is scheduled to be sent (ISO timestamp)
+        status:
+          type: string
+          enum: [pending, processing, sent, failed, cancelled]
+          description: Current status of the reminder
+        sentAt:
+          type: ["string", "null"]
+          description: When the reminder was actually sent
+        error:
+          type: ["string", "null"]
+          description: Last error message if send failed
         isEnabled:
           type: boolean
         createdAt:
@@ -873,6 +918,19 @@ components:
         daysBefore:
           type: integer
           enum: [1, 3, 7, 14, 30]
+        scheduledSendAt:
+          type: ["string", "null"]
+          description: When the reminder is scheduled to be sent (ISO timestamp)
+        status:
+          type: string
+          enum: [pending, processing, sent, failed, cancelled]
+          description: Current status of the reminder
+        sentAt:
+          type: ["string", "null"]
+          description: When the reminder was actually sent
+        error:
+          type: ["string", "null"]
+          description: Last error message if send failed
         isEnabled:
           type: boolean
           default: true
@@ -883,6 +941,19 @@ components:
         daysBefore:
           type: integer
           enum: [1, 3, 7, 14, 30]
+        scheduledSendAt:
+          type: ["string", "null"]
+          description: When the reminder is scheduled to be sent (ISO timestamp)
+        status:
+          type: string
+          enum: [pending, processing, sent, failed, cancelled]
+          description: Current status of the reminder
+        sentAt:
+          type: ["string", "null"]
+          description: When the reminder was actually sent
+        error:
+          type: ["string", "null"]
+          description: Last error message if send failed
         isEnabled:
           type: boolean
 

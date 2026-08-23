@@ -12,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Bell, BellOff, Plus, Trash2 } from "lucide-react";
+import { Bell, BellOff, Plus, Trash2, Check, AlertCircle, Clock, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,59 @@ import {
 import { Label } from "@/components/ui/label";
 import { Reveal, staggerContainer, staggerItem } from "@/lib/motion";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+
+function StatusBadge({ status }: { status?: string | null }) {
+  if (!status || status === "pending") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+        <Clock className="h-3 w-3" />
+        Scheduled
+      </span>
+    );
+  }
+  if (status === "sent") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
+        <Check className="h-3 w-3" />
+        Sent
+      </span>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+        <AlertCircle className="h-3 w-3" />
+        Failed
+      </span>
+    );
+  }
+  if (status === "cancelled") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+        <XCircle className="h-3 w-3" />
+        Cancelled
+      </span>
+    );
+  }
+  return null;
+}
+
+function formatScheduledDate(dateStr: string | null | undefined): string | null {
+  if (!dateStr) return null;
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return null;
+  }
+}
 
 export default function Reminders() {
   const queryClient = useQueryClient();
