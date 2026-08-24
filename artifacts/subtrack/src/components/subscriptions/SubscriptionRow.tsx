@@ -29,16 +29,29 @@ export default function SubscriptionRow({
   onRestore,
   onDelete,
 }: SubscriptionRowProps) {
+  const subType = sub.subscriptionType || "recurring";
+  const trialEndsAt = sub.trialEndsAt as string | null;
+
   const daysText =
     sub.isArchived
       ? "Archived"
-      : sub.daysUntilRenewal === 0
-        ? "Today"
-        : sub.daysUntilRenewal === 1
-          ? "Tomorrow"
-          : sub.daysUntilRenewal != null
-            ? `In ${sub.daysUntilRenewal}d`
-            : "—";
+      : subType === "lifetime"
+        ? "Lifetime"
+        : subType === "trial" && trialEndsAt
+          ? sub.daysUntilRenewal === 0
+            ? "Ends today"
+            : sub.daysUntilRenewal === 1
+              ? "Ends tomorrow"
+              : sub.daysUntilRenewal != null
+                ? `Ends in ${sub.daysUntilRenewal}d`
+                : "Trial"
+          : sub.daysUntilRenewal === 0
+            ? "Today"
+            : sub.daysUntilRenewal === 1
+              ? "Tomorrow"
+              : sub.daysUntilRenewal != null
+                ? `In ${sub.daysUntilRenewal}d`
+                : "—";
 
   const daysColor =
     sub.isArchived
@@ -78,8 +91,13 @@ export default function SubscriptionRow({
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+            {sub.isShared && sub.userShareAmount != null && (
+              <span className="text-primary/80">
+                Shared · Your share {formatAmount(sub.userShareAmount, sub.currency)}
+              </span>
+            )}
             <span className="capitalize">
-              {sub.billingCycle.replace("_", " ")}
+              {subType === "trial" ? "Trial" : subType === "lifetime" ? "Lifetime" : sub.billingCycle.replace("_", " ")}
             </span>
             {sub.isArchived && (
               <span className="text-muted-foreground/60">· Archived</span>
@@ -101,9 +119,19 @@ export default function SubscriptionRow({
 
       {/* Renewal */}
       <div className="hidden sm:block text-right w-24 shrink-0">
-        <p className="text-xs text-muted-foreground">
-          {format(new Date(sub.renewalDate), "MMM d")}
-        </p>
+        {sub.renewalDate ? (
+          <p className="text-xs text-muted-foreground">
+            {subType === "trial" && trialEndsAt
+              ? format(new Date(trialEndsAt), "MMM d")
+              : format(new Date(sub.renewalDate), "MMM d")}
+          </p>
+        ) : subType === "lifetime" && sub.purchaseDate ? (
+          <p className="text-xs text-muted-foreground">
+            {format(new Date(sub.purchaseDate), "MMM d")}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">—</p>
+        )}
         <p className={cn("text-xs", daysColor)}>{daysText}</p>
       </div>
 
@@ -112,7 +140,19 @@ export default function SubscriptionRow({
         <p className="text-sm font-semibold font-mono tracking-tight">
           {formatAmount(sub.price, sub.currency)}
         </p>
-        {sub.billingCycle !== "monthly" && sub.monthlyEquivalent ? (
+        {subType === "lifetime" ? (
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            one-time
+          </p>
+        ) : subType === "trial" && sub.billingCycle === "monthly" ? (
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            trial price
+          </p>
+        ) : subType === "trial" ? (
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            trial price
+          </p>
+        ) : sub.billingCycle !== "monthly" && sub.monthlyEquivalent ? (
           <p className="text-[11px] text-muted-foreground mt-0.5">
             ≈ {formatAmount(sub.monthlyEquivalent, sub.currency)}/mo
           </p>

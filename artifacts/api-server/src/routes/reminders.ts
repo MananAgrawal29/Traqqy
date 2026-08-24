@@ -53,6 +53,10 @@ router.post("/", requireAuth, async (req, res) => {
       return;
     }
 
+    if (!sub.renewalDate) {
+      res.status(400).json({ error: "Subscription has no renewal date" });
+      return;
+    }
     const scheduledSendAt = await calculateScheduledSendAt(userId, sub.renewalDate, daysBefore);
 
     const [reminder] = await db.insert(remindersTable).values({
@@ -102,7 +106,7 @@ router.patch("/:id", requireAuth, async (req, res) => {
         .from(subscriptionsTable)
         .where(eq(subscriptionsTable.id, existing.subscriptionId))
         .limit(1);
-      if (sub) {
+      if (sub && sub.renewalDate) {
         updates.scheduledSendAt = await calculateScheduledSendAt(userId, sub.renewalDate, daysBefore);
       }
     }
@@ -118,7 +122,7 @@ router.patch("/:id", requireAuth, async (req, res) => {
           .from(subscriptionsTable)
           .where(eq(subscriptionsTable.id, existing.subscriptionId))
           .limit(1);
-        if (sub) {
+        if (sub && sub.renewalDate) {
           updates.scheduledSendAt = await calculateScheduledSendAt(
             userId,
             sub.renewalDate,

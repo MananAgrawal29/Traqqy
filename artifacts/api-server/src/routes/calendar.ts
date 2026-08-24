@@ -24,7 +24,8 @@ router.get("/", requireAuth, async (req, res) => {
   const endDate = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
   try {
-    const rows = await db
+    // Query 1: Recurring subscriptions with renewal dates in this month
+    const recurringRows = await db
       .select()
       .from(subscriptionsTable)
       .leftJoin(categoriesTable, eq(subscriptionsTable.categoryId, categoriesTable.id))
@@ -32,16 +33,36 @@ router.get("/", requireAuth, async (req, res) => {
         and(
           eq(subscriptionsTable.clerkId, userId),
           eq(subscriptionsTable.isArchived, false),
+          eq(subscriptionsTable.subscriptionType, "recurring"),
           gte(subscriptionsTable.renewalDate, startDate),
           lte(subscriptionsTable.renewalDate, endDate),
         )
       )
       .orderBy(subscriptionsTable.renewalDate);
 
+    // Query 2: Trial subscriptions with trialEndsAt in this month
+    const trialRows = await db
+      .select()
+      .from(subscriptionsTable)
+      .leftJoin(categoriesTable, eq(subscriptionsTable.categoryId, categoriesTable.id))
+      .where(
+        and(
+          eq(subscriptionsTable.clerkId, userId),
+          eq(subscriptionsTable.isArchived, false),
+          eq(subscriptionsTable.subscriptionType, "trial"),
+          gte(subscriptionsTable.trialEndsAt, startDate),
+          lte(subscriptionsTable.trialEndsAt, endDate),
+        )
+      )
+      .orderBy(subscriptionsTable.trialEndsAt);
+
     // Group by date
     const grouped = new Map<string, any[]>();
-    for (const row of rows) {
-      const date = row.subscriptions.renewalDate;
+
+    // Add recurring events
+    for (const row of recurringRows) {
+      const rd = row.subscriptions.renewalDate as string | null;
+      if (!rd) continue;
       const price = parseFloat(row.subscriptions.price);
       const { monthlyEquivalent, annualEquivalent } = calcEquivalents(price, row.subscriptions.billingCycle as BillingCycle);
       const enriched = {
@@ -50,10 +71,30 @@ router.get("/", requireAuth, async (req, res) => {
         monthlyEquivalent,
         annualEquivalent,
         categoryName: row.categories?.name ?? null,
-        daysUntilRenewal: daysUntil(row.subscriptions.renewalDate),
+        daysUntilRenewal: daysUntil(rd),
+        eventType: "renewal",
       };
-      if (!grouped.has(date)) grouped.set(date, []);
-      grouped.get(date)!.push(enriched);
+      if (!grouped.has(rd)) grouped.set(rd, []);
+      grouped.get(rd)!.push(enriched);
+    }
+
+    // Add trial expiration events
+    for (const row of trialRows) {
+      const td = row.subscriptions.trialEndsAt as string | null;
+      if (!td) continue;
+      const price = parseFloat(row.subscriptions.price);
+      const { monthlyEquivalent, annualEquivalent } = calcEquivalents(price, row.subscriptions.billingCycle as BillingCycle);
+      const enriched = {
+        ...row.subscriptions,
+        price,
+        monthlyEquivalent,
+        annualEquivalent,
+        categoryName: row.categories?.name ?? null,
+        daysUntilRenewal: daysUntil(td),
+        eventType: "trial_expiration",
+      };
+      if (!grouped.has(td)) grouped.set(td, []);
+      grouped.get(td)!.push(enriched);
     }
 
     const result = Array.from(grouped.entries())

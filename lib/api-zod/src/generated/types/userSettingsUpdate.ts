@@ -13,4 +13,9 @@ export interface UserSettingsUpdate {
   currency?: string;
   theme?: UserSettingsUpdateTheme;
   timezone?: string;
+  /**
+     * JSON-encoded health preferences
+     * @nullable
+     */
+  healthPreferences?: string | null;
 }

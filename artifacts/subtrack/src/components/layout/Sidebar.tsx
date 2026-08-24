@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { TraqqyBrand } from "@/components/layout/TraqqyBrand";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import {
   DropdownMenu,
@@ -135,14 +136,7 @@ export function Sidebar() {
           href="/dashboard"
           className="flex items-center gap-2 shrink-0"
         >
-          <motion.img
-            src={`${basePath}/logo.svg`}
-            alt="Traqqy"
-            className="h-6 w-6"
-            whileHover={{ scale: 1.08, rotate: -4 }}
-            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-          />
-          <span className="text-sm font-bold tracking-tight">Traqqy</span>
+          <TraqqyBrand variant="wordmark" size={24} />
         </Link>
 
         {/* Pill navigation */}
@@ -162,12 +156,7 @@ export function Sidebar() {
             href="/dashboard"
             className="flex items-center gap-2"
           >
-            <img
-              src={`${basePath}/logo.svg`}
-              alt="Traqqy"
-              className="h-5 w-5"
-            />
-            <span className="text-sm font-bold tracking-tight">Traqqy</span>
+            <TraqqyBrand variant="wordmark" size={20} animate={false} />
           </Link>
           <UserDropdown basePath={basePath} />
         </div>

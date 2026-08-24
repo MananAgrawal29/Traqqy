@@ -31,6 +31,10 @@ export const ListSubscriptionsQueryParams = zod.object({
   "sortOrder": zod.enum(['asc', 'desc']).optional().describe('Sort direction')
 })
 
+export const listSubscriptionsResponseSubscriptionTypeDefault = `recurring`;
+export const listSubscriptionsResponseIsSharedDefault = false;
+export const listSubscriptionsResponseSplitModeDefault = `equal`;
+
 export const ListSubscriptionsResponseItem = zod.object({
   "id": zod.number(),
   "userId": zod.string(),
@@ -41,7 +45,7 @@ export const ListSubscriptionsResponseItem = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -49,6 +53,21 @@ export const ListSubscriptionsResponseItem = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(listSubscriptionsResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(listSubscriptionsResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(listSubscriptionsResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -63,6 +82,9 @@ export const createSubscriptionBodyPriceMin = 0;
 
 export const createSubscriptionBodyCurrencyDefault = `USD`;
 export const createSubscriptionBodyIsActiveDefault = true;
+export const createSubscriptionBodySubscriptionTypeDefault = `recurring`;
+export const createSubscriptionBodyIsSharedDefault = false;
+export const createSubscriptionBodySplitModeDefault = `equal`;
 
 export const CreateSubscriptionBody = zod.object({
   "name": zod.string().min(1),
@@ -70,12 +92,29 @@ export const CreateSubscriptionBody = zod.object({
   "categoryId": zod.number().optional(),
   "price": zod.number().min(createSubscriptionBodyPriceMin),
   "currency": zod.string().default(createSubscriptionBodyCurrencyDefault),
-  "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date YYYY-MM-DD'),
+  "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']).optional(),
+  "renewalDate": zod.string().optional().describe('ISO date YYYY-MM-DD (required for recurring)'),
   "paymentMethod": zod.string().optional(),
   "notes": zod.string().optional(),
-  "isActive": zod.boolean().default(createSubscriptionBodyIsActiveDefault)
+  "isActive": zod.boolean().default(createSubscriptionBodyIsActiveDefault),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(createSubscriptionBodySubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD'),
+  "trialConvertsToRecurring": zod.boolean().nullish(),
+  "recurringPrice": zod.number().nullish(),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish(),
+  "isShared": zod.boolean().default(createSubscriptionBodyIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(createSubscriptionBodySplitModeDefault),
+  "shares": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Required when isShared is true'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions')
 })
+
+export const createSubscriptionResponseSubscriptionTypeDefault = `recurring`;
+export const createSubscriptionResponseIsSharedDefault = false;
+export const createSubscriptionResponseSplitModeDefault = `equal`;
 
 export const CreateSubscriptionResponse = zod.object({
   "id": zod.number(),
@@ -87,7 +126,7 @@ export const CreateSubscriptionResponse = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -95,6 +134,21 @@ export const CreateSubscriptionResponse = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(createSubscriptionResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(createSubscriptionResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(createSubscriptionResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -107,6 +161,10 @@ export const GetSubscriptionParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const getSubscriptionResponseSubscriptionTypeDefault = `recurring`;
+export const getSubscriptionResponseIsSharedDefault = false;
+export const getSubscriptionResponseSplitModeDefault = `equal`;
+
 export const GetSubscriptionResponse = zod.object({
   "id": zod.number(),
   "userId": zod.string(),
@@ -117,7 +175,7 @@ export const GetSubscriptionResponse = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -125,6 +183,21 @@ export const GetSubscriptionResponse = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(getSubscriptionResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(getSubscriptionResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(getSubscriptionResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -149,11 +222,28 @@ export const UpdateSubscriptionBody = zod.object({
   "price": zod.number().min(updateSubscriptionBodyPriceMin).optional(),
   "currency": zod.string().optional(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']).optional(),
-  "renewalDate": zod.string().optional(),
+  "renewalDate": zod.string().nullish(),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
-  "isActive": zod.boolean().optional()
+  "isActive": zod.boolean().optional(),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).optional(),
+  "trialEndsAt": zod.string().nullish(),
+  "trialConvertsToRecurring": zod.boolean().nullish(),
+  "recurringPrice": zod.number().nullish(),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish(),
+  "isShared": zod.boolean().optional(),
+  "splitMode": zod.enum(['equal', 'custom']).optional(),
+  "shares": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Full list of shares to replace existing'),
+  "purchaseDate": zod.string().nullish()
 })
+
+export const updateSubscriptionResponseSubscriptionTypeDefault = `recurring`;
+export const updateSubscriptionResponseIsSharedDefault = false;
+export const updateSubscriptionResponseSplitModeDefault = `equal`;
 
 export const UpdateSubscriptionResponse = zod.object({
   "id": zod.number(),
@@ -165,7 +255,7 @@ export const UpdateSubscriptionResponse = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -173,6 +263,21 @@ export const UpdateSubscriptionResponse = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(updateSubscriptionResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(updateSubscriptionResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(updateSubscriptionResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -195,6 +300,10 @@ export const ArchiveSubscriptionParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const archiveSubscriptionResponseSubscriptionTypeDefault = `recurring`;
+export const archiveSubscriptionResponseIsSharedDefault = false;
+export const archiveSubscriptionResponseSplitModeDefault = `equal`;
+
 export const ArchiveSubscriptionResponse = zod.object({
   "id": zod.number(),
   "userId": zod.string(),
@@ -205,7 +314,7 @@ export const ArchiveSubscriptionResponse = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -213,6 +322,21 @@ export const ArchiveSubscriptionResponse = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(archiveSubscriptionResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(archiveSubscriptionResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(archiveSubscriptionResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -225,6 +349,10 @@ export const RestoreSubscriptionParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const restoreSubscriptionResponseSubscriptionTypeDefault = `recurring`;
+export const restoreSubscriptionResponseIsSharedDefault = false;
+export const restoreSubscriptionResponseSplitModeDefault = `equal`;
+
 export const RestoreSubscriptionResponse = zod.object({
   "id": zod.number(),
   "userId": zod.string(),
@@ -235,7 +363,7 @@ export const RestoreSubscriptionResponse = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -243,6 +371,21 @@ export const RestoreSubscriptionResponse = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(restoreSubscriptionResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(restoreSubscriptionResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(restoreSubscriptionResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -445,6 +588,10 @@ export const GetDashboardSummaryResponse = zod.object({
 /**
  * @summary Get subscriptions renewing in the next 30 days
  */
+export const getUpcomingRenewalsResponseSubscriptionTypeDefault = `recurring`;
+export const getUpcomingRenewalsResponseIsSharedDefault = false;
+export const getUpcomingRenewalsResponseSplitModeDefault = `equal`;
+
 export const GetUpcomingRenewalsResponseItem = zod.object({
   "id": zod.number(),
   "userId": zod.string(),
@@ -455,7 +602,7 @@ export const GetUpcomingRenewalsResponseItem = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -463,6 +610,21 @@ export const GetUpcomingRenewalsResponseItem = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(getUpcomingRenewalsResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(getUpcomingRenewalsResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(getUpcomingRenewalsResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -472,6 +634,10 @@ export const GetUpcomingRenewalsResponse = zod.array(GetUpcomingRenewalsResponse
 /**
  * @summary Get recently added or modified subscriptions
  */
+export const getRecentActivityResponseSubscriptionTypeDefault = `recurring`;
+export const getRecentActivityResponseIsSharedDefault = false;
+export const getRecentActivityResponseSplitModeDefault = `equal`;
+
 export const GetRecentActivityResponseItem = zod.object({
   "id": zod.number(),
   "userId": zod.string(),
@@ -482,7 +648,7 @@ export const GetRecentActivityResponseItem = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -490,6 +656,21 @@ export const GetRecentActivityResponseItem = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(getRecentActivityResponseSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(getRecentActivityResponseIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(getRecentActivityResponseSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -549,6 +730,10 @@ export const GetCalendarEventsQueryParams = zod.object({
   "month": zod.coerce.number()
 })
 
+export const getCalendarEventsResponseSubscriptionsItemSubscriptionTypeDefault = `recurring`;
+export const getCalendarEventsResponseSubscriptionsItemIsSharedDefault = false;
+export const getCalendarEventsResponseSubscriptionsItemSplitModeDefault = `equal`;
+
 export const GetCalendarEventsResponseItem = zod.object({
   "date": zod.string().describe('ISO date YYYY-MM-DD'),
   "subscriptions": zod.array(zod.object({
@@ -561,7 +746,7 @@ export const GetCalendarEventsResponseItem = zod.object({
   "price": zod.number(),
   "currency": zod.string(),
   "billingCycle": zod.enum(['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly']),
-  "renewalDate": zod.string().describe('ISO date string YYYY-MM-DD'),
+  "renewalDate": zod.string().nullish().describe('ISO date string YYYY-MM-DD (null for lifetime subscriptions)'),
   "paymentMethod": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "isActive": zod.boolean(),
@@ -569,6 +754,21 @@ export const GetCalendarEventsResponseItem = zod.object({
   "monthlyEquivalent": zod.number().describe('Monthly cost equivalent in the original currency'),
   "annualEquivalent": zod.number().describe('Annual cost equivalent in the original currency'),
   "daysUntilRenewal": zod.number().nullish().describe('Days until next renewal (null if archived)'),
+  "subscriptionType": zod.enum(['recurring', 'trial', 'lifetime']).default(getCalendarEventsResponseSubscriptionsItemSubscriptionTypeDefault),
+  "trialEndsAt": zod.string().nullish().describe('Trial end date YYYY-MM-DD (null if not a trial)'),
+  "trialConvertsToRecurring": zod.boolean().nullish().describe('Whether trial converts to recurring (null if not a trial)'),
+  "recurringPrice": zod.number().nullish().describe('Price after trial converts (null if not a trial)'),
+  "recurringBillingCycle": zod.union([zod.literal('weekly'),zod.literal('monthly'),zod.literal('quarterly'),zod.literal('semi_annual'),zod.literal('yearly'),zod.literal(null)]).nullish().describe('Billing cycle after trial converts (null if not a trial)'),
+  "purchaseDate": zod.string().nullish().describe('Purchase date for lifetime subscriptions'),
+  "isShared": zod.boolean().default(getCalendarEventsResponseSubscriptionsItemIsSharedDefault),
+  "splitMode": zod.enum(['equal', 'custom']).default(getCalendarEventsResponseSubscriptionsItemSplitModeDefault),
+  "shares": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "isCurrentUser": zod.boolean()
+})).optional().describe('Cost sharing breakdown (empty if personal)'),
+  "userShareAmount": zod.number().nullish().describe('Current user\'s share amount (null if personal or no shares)'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 }))
@@ -591,7 +791,8 @@ export const GetSettingsResponse = zod.object({
   "theme": zod.enum(['light', 'dark', 'system']).default(getSettingsResponseThemeDefault),
   "timezone": zod.string().default(getSettingsResponseTimezoneDefault),
   "createdAt": zod.string(),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "healthPreferences": zod.string().nullish().describe('JSON-encoded health preferences')
 })
 
 
@@ -602,7 +803,8 @@ export const UpdateSettingsBody = zod.object({
   "displayName": zod.string().nullish(),
   "currency": zod.string().optional(),
   "theme": zod.enum(['light', 'dark', 'system']).optional(),
-  "timezone": zod.string().optional()
+  "timezone": zod.string().optional(),
+  "healthPreferences": zod.string().nullish().describe('JSON-encoded health preferences')
 })
 
 export const updateSettingsResponseCurrencyDefault = `USD`;
@@ -617,7 +819,8 @@ export const UpdateSettingsResponse = zod.object({
   "theme": zod.enum(['light', 'dark', 'system']).default(updateSettingsResponseThemeDefault),
   "timezone": zod.string().default(updateSettingsResponseTimezoneDefault),
   "createdAt": zod.string(),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "healthPreferences": zod.string().nullish().describe('JSON-encoded health preferences')
 })
 
 

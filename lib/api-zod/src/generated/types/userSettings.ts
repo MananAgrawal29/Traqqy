@@ -17,4 +17,9 @@ export interface UserSettings {
   timezone: string;
   createdAt: string;
   updatedAt: string;
+  /**
+     * JSON-encoded health preferences
+     * @nullable
+     */
+  healthPreferences?: string | null;
 }

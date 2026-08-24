@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { SubscriptionUpdateBillingCycle } from './subscriptionUpdateBillingCycle';
+import type { SubscriptionUpdateRecurringBillingCycle } from './subscriptionUpdateRecurringBillingCycle';
+import type { SubscriptionUpdateSharesItem } from './subscriptionUpdateSharesItem';
+import type { SubscriptionUpdateSplitMode } from './subscriptionUpdateSplitMode';
+import type { SubscriptionUpdateSubscriptionType } from './subscriptionUpdateSubscriptionType';
 
 export interface SubscriptionUpdate {
   /** @minLength 1 */
@@ -18,10 +22,26 @@ export interface SubscriptionUpdate {
   price?: number;
   currency?: string;
   billingCycle?: SubscriptionUpdateBillingCycle;
-  renewalDate?: string;
+  /** @nullable */
+  renewalDate?: string | null;
   /** @nullable */
   paymentMethod?: string | null;
   /** @nullable */
   notes?: string | null;
   isActive?: boolean;
+  subscriptionType?: SubscriptionUpdateSubscriptionType;
+  /** @nullable */
+  trialEndsAt?: string | null;
+  /** @nullable */
+  trialConvertsToRecurring?: boolean | null;
+  /** @nullable */
+  recurringPrice?: number | null;
+  /** @nullable */
+  recurringBillingCycle?: SubscriptionUpdateRecurringBillingCycle;
+  isShared?: boolean;
+  splitMode?: SubscriptionUpdateSplitMode;
+  /** Full list of shares to replace existing */
+  shares?: SubscriptionUpdateSharesItem[];
+  /** @nullable */
+  purchaseDate?: string | null;
 }

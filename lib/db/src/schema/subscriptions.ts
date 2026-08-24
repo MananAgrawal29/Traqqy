@@ -12,9 +12,17 @@ export const subscriptionsTable = pgTable("subscriptions", {
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
   billingCycle: text("billing_cycle").notNull(), // weekly | monthly | quarterly | semi_annual | yearly
-  renewalDate: date("renewal_date", { mode: "string" }).notNull(),
+  renewalDate: date("renewal_date", { mode: "string" }),
   paymentMethod: text("payment_method"),
   notes: text("notes"),
+  subscriptionType: text("subscription_type").notNull().default("recurring"), // recurring | trial | lifetime
+  trialEndsAt: date("trial_ends_at", { mode: "string" }),
+  trialConvertsToRecurring: boolean("trial_converts_to_recurring"),
+  recurringPrice: numeric("recurring_price", { precision: 10, scale: 2 }),
+  recurringBillingCycle: text("recurring_billing_cycle"), // billing cycle after trial converts
+  purchaseDate: date("purchase_date", { mode: "string" }),
+    isShared: boolean("is_shared").notNull().default(false),
+  splitMode: text("split_mode").notNull().default("equal"), // equal | custom
   isActive: boolean("is_active").notNull().default(true),
   isArchived: boolean("is_archived").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

@@ -7,7 +7,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background flex flex-col font-sans">
       <header className="px-6 h-16 flex items-center justify-between border-b">
         <div className="flex items-center gap-2">
-          <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.svg`} alt="SubTrack" className="h-8 w-8" />
+          <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/traqqy-symbol.png`} alt="SubTrack" className="h-8 w-8" />
           <span className="font-bold text-xl tracking-tight">Traqqy</span>
         </div>
         <div className="flex items-center gap-4">

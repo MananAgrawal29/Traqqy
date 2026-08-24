@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { SubscriptionBillingCycle } from './subscriptionBillingCycle';
+import type { SubscriptionRecurringBillingCycle } from './subscriptionRecurringBillingCycle';
+import type { SubscriptionShare } from './subscriptionShare';
+import type { SubscriptionSplitMode } from './subscriptionSplitMode';
+import type { SubscriptionSubscriptionType } from './subscriptionSubscriptionType';
 
 export interface Subscription {
   id: number;
@@ -20,8 +24,11 @@ export interface Subscription {
   price: number;
   currency: string;
   billingCycle: SubscriptionBillingCycle;
-  /** ISO date string YYYY-MM-DD */
-  renewalDate: string;
+  /**
+     * ISO date string YYYY-MM-DD (null for lifetime subscriptions)
+     * @nullable
+     */
+  renewalDate?: string | null;
   /** @nullable */
   paymentMethod?: string | null;
   /** @nullable */
@@ -37,6 +44,41 @@ export interface Subscription {
      * @nullable
      */
   daysUntilRenewal?: number | null;
+  subscriptionType?: SubscriptionSubscriptionType;
+  /**
+     * Trial end date YYYY-MM-DD (null if not a trial)
+     * @nullable
+     */
+  trialEndsAt?: string | null;
+  /**
+     * Whether trial converts to recurring (null if not a trial)
+     * @nullable
+     */
+  trialConvertsToRecurring?: boolean | null;
+  /**
+     * Price after trial converts (null if not a trial)
+     * @nullable
+     */
+  recurringPrice?: number | null;
+  /**
+     * Billing cycle after trial converts (null if not a trial)
+     * @nullable
+     */
+  recurringBillingCycle?: SubscriptionRecurringBillingCycle;
+  /**
+     * Purchase date for lifetime subscriptions
+     * @nullable
+     */
+  purchaseDate?: string | null;
+  isShared: boolean;
+  splitMode: SubscriptionSplitMode;
+  /** Cost sharing breakdown (empty if personal) */
+  shares?: SubscriptionShare[];
+  /**
+     * Current user's share amount (null if personal or no shares)
+     * @nullable
+     */
+  userShareAmount?: number | null;
   createdAt: string;
   updatedAt: string;
 }

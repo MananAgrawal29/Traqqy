@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { SubscriptionInputBillingCycle } from './subscriptionInputBillingCycle';
+import type { SubscriptionInputRecurringBillingCycle } from './subscriptionInputRecurringBillingCycle';
+import type { SubscriptionInputSharesItem } from './subscriptionInputSharesItem';
+import type { SubscriptionInputSplitMode } from './subscriptionInputSplitMode';
+import type { SubscriptionInputSubscriptionType } from './subscriptionInputSubscriptionType';
 
 export interface SubscriptionInput {
   /** @minLength 1 */
@@ -15,10 +19,31 @@ export interface SubscriptionInput {
   /** @minimum 0 */
   price: number;
   currency: string;
-  billingCycle: SubscriptionInputBillingCycle;
-  /** ISO date YYYY-MM-DD */
-  renewalDate: string;
+  billingCycle?: SubscriptionInputBillingCycle;
+  /** ISO date YYYY-MM-DD (required for recurring) */
+  renewalDate?: string;
   paymentMethod?: string;
   notes?: string;
   isActive?: boolean;
+  subscriptionType?: SubscriptionInputSubscriptionType;
+  /**
+     * Trial end date YYYY-MM-DD
+     * @nullable
+     */
+  trialEndsAt?: string | null;
+  /** @nullable */
+  trialConvertsToRecurring?: boolean | null;
+  /** @nullable */
+  recurringPrice?: number | null;
+  /** @nullable */
+  recurringBillingCycle?: SubscriptionInputRecurringBillingCycle;
+  isShared?: boolean;
+  splitMode?: SubscriptionInputSplitMode;
+  /** Required when isShared is true */
+  shares?: SubscriptionInputSharesItem[];
+  /**
+     * Purchase date for lifetime subscriptions
+     * @nullable
+     */
+  purchaseDate?: string | null;
 }

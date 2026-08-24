@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { subscriptionsTable, categoriesTable } from "@workspace/db";
+import { subscriptionsTable, categoriesTable, subscriptionSharesTable } from "@workspace/db";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
 import { calcEquivalents, daysUntil } from "../lib/billing";
@@ -17,7 +17,15 @@ function enrichSub(sub: any, category: any) {
     monthlyEquivalent,
     annualEquivalent,
     categoryName: category?.name ?? null,
-    daysUntilRenewal: sub.isArchived ? null : daysUntil(sub.renewalDate),
+    daysUntilRenewal: sub.isArchived ? null : (sub.subscriptionType === "lifetime" ? null : (sub.renewalDate ? daysUntil(sub.renewalDate) : null)),
+    subscriptionType: sub.subscriptionType || "recurring",
+    trialEndsAt: sub.trialEndsAt || null,
+    trialConvertsToRecurring: sub.trialConvertsToRecurring ?? null,
+    recurringPrice: sub.recurringPrice ? parseFloat(sub.recurringPrice) : null,
+    recurringBillingCycle: sub.recurringBillingCycle || null,
+    purchaseDate: sub.purchaseDate || null,
+    isShared: sub.isShared || false,
+    splitMode: sub.splitMode || "equal",
   };
 }
 
@@ -37,11 +45,19 @@ router.get("/summary", requireAuth, async (req, res) => {
     let upcomingCount = 0;
 
     for (const sub of activeSubs) {
-      const price = parseFloat(sub.price);
-      const { monthlyEquivalent } = calcEquivalents(price, sub.billingCycle as BillingCycle);
+      // Skip lifetime and trial subscriptions from recurring spend calculations
+      if (sub.subscriptionType === "lifetime" || sub.subscriptionType === "trial") continue;
+      // For shared subscriptions, use userShareAmount instead of full price
+      let effectivePrice = parseFloat(sub.price);
+      if (sub.isShared) {
+        const shares = await db.select().from(subscriptionSharesTable).where(eq(subscriptionSharesTable.subscriptionId, sub.id));
+        const userShare = shares.find(s => s.isCurrentUser);
+        if (userShare) effectivePrice = parseFloat(userShare.amount);
+      }
+      const { monthlyEquivalent } = calcEquivalents(effectivePrice, sub.billingCycle as BillingCycle);
       monthlySpend += monthlyEquivalent;
 
-      const days = daysUntil(sub.renewalDate);
+      const days = sub.renewalDate ? daysUntil(sub.renewalDate) : null;
       if (days !== null && days >= 0 && days <= 7) upcomingCount++;
       if (days !== null && days >= 0 && (nextRenewalDays === null || days < nextRenewalDays)) {
         nextRenewalDays = days;
@@ -81,6 +97,7 @@ router.get("/upcoming-renewals", requireAuth, async (req, res) => {
           eq(subscriptionsTable.isArchived, false),
           gte(subscriptionsTable.renewalDate, todayStr),
           lte(subscriptionsTable.renewalDate, endStr),
+          eq(subscriptionsTable.subscriptionType, "recurring"),
         )
       )
       .orderBy(subscriptionsTable.renewalDate);

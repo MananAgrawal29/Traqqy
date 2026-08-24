@@ -717,6 +717,20 @@ paths:
 # ──────────────────────────────────────────────────────────────
 components:
   schemas:
+
+    SubscriptionShare:
+      type: object
+      required: [name, amount, isCurrentUser]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        amount:
+          type: number
+        isCurrentUser:
+          type: boolean
+
     HealthStatus:
       type: object
       properties:
@@ -728,7 +742,7 @@ components:
     # ── Subscription ──
     Subscription:
       type: object
-      required: [id, userId, name, price, currency, billingCycle, renewalDate, isActive, isArchived, monthlyEquivalent, annualEquivalent, createdAt, updatedAt]
+      required: [id, userId, name, price, currency, billingCycle, isActive, isArchived, monthlyEquivalent, annualEquivalent, isShared, splitMode, createdAt, updatedAt]
       properties:
         id:
           type: integer
@@ -750,8 +764,8 @@ components:
           type: string
           enum: [weekly, monthly, quarterly, semi_annual, yearly]
         renewalDate:
-          type: string
-          description: ISO date string YYYY-MM-DD
+          type: ["string", "null"]
+          description: ISO date string YYYY-MM-DD (null for lifetime subscriptions)
         paymentMethod:
           type: ["string", "null"]
         notes:
@@ -769,6 +783,41 @@ components:
         daysUntilRenewal:
           type: ["integer", "null"]
           description: Days until next renewal (null if archived)
+        subscriptionType:
+          type: string
+          enum: [recurring, trial, lifetime]
+          default: recurring
+        trialEndsAt:
+          type: ["string", "null"]
+          description: "Trial end date YYYY-MM-DD (null if not a trial)"
+        trialConvertsToRecurring:
+          type: ["boolean", "null"]
+          description: "Whether trial converts to recurring (null if not a trial)"
+        recurringPrice:
+          type: ["number", "null"]
+          description: "Price after trial converts (null if not a trial)"
+        recurringBillingCycle:
+          type: ["string", "null"]
+          enum: [weekly, monthly, quarterly, semi_annual, yearly, null]
+          description: "Billing cycle after trial converts (null if not a trial)"
+        purchaseDate:
+          type: ["string", "null"]
+          description: "Purchase date for lifetime subscriptions"
+        isShared:
+          type: boolean
+          default: false
+        splitMode:
+          type: string
+          enum: [equal, custom]
+          default: equal
+        shares:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubscriptionShare"
+          description: Cost sharing breakdown (empty if personal)
+        userShareAmount:
+          type: ["number", "null"]
+          description: Current user's share amount (null if personal or no shares)
         createdAt:
           type: string
         updatedAt:
@@ -776,7 +825,7 @@ components:
 
     SubscriptionInput:
       type: object
-      required: [name, price, currency, billingCycle, renewalDate]
+      required: [name, price, currency]
       properties:
         name:
           type: string
@@ -796,7 +845,7 @@ components:
           enum: [weekly, monthly, quarterly, semi_annual, yearly]
         renewalDate:
           type: string
-          description: ISO date YYYY-MM-DD
+          description: "ISO date YYYY-MM-DD (required for recurring)"
         paymentMethod:
           type: string
         notes:
@@ -804,6 +853,43 @@ components:
         isActive:
           type: boolean
           default: true
+        subscriptionType:
+          type: string
+          enum: [recurring, trial, lifetime]
+          default: recurring
+        trialEndsAt:
+          type: ["string", "null"]
+          description: "Trial end date YYYY-MM-DD"
+        trialConvertsToRecurring:
+          type: ["boolean", "null"]
+        recurringPrice:
+          type: ["number", "null"]
+        recurringBillingCycle:
+          type: ["string", "null"]
+          enum: [weekly, monthly, quarterly, semi_annual, yearly, null]
+        isShared:
+          type: boolean
+          default: false
+        splitMode:
+          type: string
+          enum: [equal, custom]
+          default: equal
+        shares:
+          type: array
+          items:
+            type: object
+            required: [name, amount, isCurrentUser]
+            properties:
+              name:
+                type: string
+              amount:
+                type: number
+              isCurrentUser:
+                type: boolean
+          description: Required when isShared is true
+        purchaseDate:
+          type: ["string", "null"]
+          description: "Purchase date for lifetime subscriptions"
 
     SubscriptionUpdate:
       type: object
@@ -824,13 +910,45 @@ components:
           type: string
           enum: [weekly, monthly, quarterly, semi_annual, yearly]
         renewalDate:
-          type: string
+          type: ["string", "null"]
         paymentMethod:
           type: ["string", "null"]
         notes:
           type: ["string", "null"]
         isActive:
           type: boolean
+        subscriptionType:
+          type: string
+          enum: [recurring, trial, lifetime]
+        trialEndsAt:
+          type: ["string", "null"]
+        trialConvertsToRecurring:
+          type: ["boolean", "null"]
+        recurringPrice:
+          type: ["number", "null"]
+        recurringBillingCycle:
+          type: ["string", "null"]
+          enum: [weekly, monthly, quarterly, semi_annual, yearly, null]
+        isShared:
+          type: boolean
+        splitMode:
+          type: string
+          enum: [equal, custom]
+        shares:
+          type: array
+          items:
+            type: object
+            required: [name, amount, isCurrentUser]
+            properties:
+              name:
+                type: string
+              amount:
+                type: number
+              isCurrentUser:
+                type: boolean
+          description: Full list of shares to replace existing
+        purchaseDate:
+          type: ["string", "null"]
 
     # ── Category ──
     Category:
@@ -1075,6 +1193,9 @@ components:
           type: string
         updatedAt:
           type: string
+        healthPreferences:
+          type: ["string", "null"]
+          description: "JSON-encoded health preferences"
 
     UserSettingsUpdate:
       type: object
@@ -1088,6 +1209,9 @@ components:
           enum: [light, dark, system]
         timezone:
           type: string
+        healthPreferences:
+          type: ["string", "null"]
+          description: "JSON-encoded health preferences"
 
     # ── Auto Import ──
     AutoImportStatus:

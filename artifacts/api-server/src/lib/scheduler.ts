@@ -149,6 +149,10 @@ async function processReminder(reminder: {
     return { success: false, error: "Subscription is not active" };
   }
 
+  if (!sub.renewalDate) {
+    return { success: false, error: "Subscription has no renewal date" };
+  }
+
   // Fetch user email from Clerk
   const email = await getClerkUserEmail(reminder.clerkId);
   if (!email) {

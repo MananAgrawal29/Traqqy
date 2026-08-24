@@ -105,10 +105,9 @@ export default function Subscriptions() {
         case "price-asc":
           return (a.monthlyEquivalent || 0) - (b.monthlyEquivalent || 0);
         case "renewal":
-          return (
-            new Date(a.renewalDate).getTime() -
-            new Date(b.renewalDate).getTime()
-          );
+          const aDate = a.renewalDate ? new Date(a.renewalDate).getTime() : Infinity;
+          const bDate = b.renewalDate ? new Date(b.renewalDate).getTime() : Infinity;
+          return aDate - bDate;
         case "recent":
           return (
             new Date(b.createdAt).getTime() -

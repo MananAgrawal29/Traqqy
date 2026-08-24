@@ -147,7 +147,7 @@ export default function Dashboard() {
                       </p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                         <span>
-                          {format(new Date(sub.renewalDate), "MMM d, yyyy")}
+                          {sub.renewalDate ? format(new Date(sub.renewalDate), "MMM d, yyyy") : "—"}
                         </span>
                         <span className="text-border">·</span>
                         <span
@@ -188,10 +188,8 @@ export default function Dashboard() {
         </section>
       </Reveal>
 
-      {/* ── Two-column: Categories + Activity ────────────────────── */}
-      <div className="grid gap-10 lg:grid-cols-5">
         {/* Category breakdown */}
-        <Reveal delay={0.2} className="lg:col-span-3">
+        <Reveal delay={0.2}>
           <section>
             <h2 className="text-lg font-semibold tracking-tight mb-5">
               Where your money goes
@@ -258,53 +256,6 @@ export default function Dashboard() {
           </section>
         </Reveal>
 
-        {/* Recent activity */}
-        <Reveal delay={0.3} className="lg:col-span-2">
-          <section>
-            <h2 className="text-lg font-semibold tracking-tight mb-5">
-              Recent activity
-            </h2>
-
-            <div className="space-y-3">
-              {loadingActivities ? (
-                <div className="py-4 text-center text-sm text-muted-foreground">
-                  Loading...
-                </div>
-              ) : activities && activities.length > 0 ? (
-                activities.slice(0, 5).map((act: any, i: number) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.3,
-                      delay: 0.5 + i * 0.06,
-                    }}
-                    className="flex gap-3 items-start py-2"
-                  >
-                    <div className="mt-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                    <div>
-                      <p className="text-sm">
-                        {act.description || act.message || "Activity recorded"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {format(
-                          new Date(act.createdAt || new Date()),
-                          "MMM d, h:mm a"
-                        )}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="py-8 text-center text-sm text-muted-foreground border border-dashed border-border/50 rounded-xl">
-                  No recent activity.
-                </div>
-              )}
-            </div>
-          </section>
-        </Reveal>
-      </div>
 
       {/* ── Attention section ────────────────────────────────────── */}
       {renewals &&

@@ -60,7 +60,7 @@ export default function CalendarPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              See your upcoming subscription renewals.
+              See your upcoming subscription events.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export default function CalendarPage() {
                       <Popover>
                         <PopoverTrigger asChild>
                           <button className="w-full text-left bg-primary/10 hover:bg-primary/15 border border-primary/15 rounded px-1.5 py-0.5 text-[10px] text-primary font-medium transition-colors">
-                            {subs.length} renewal{subs.length > 1 ? "s" : ""}
+                            {(() => { const renewals = subs.filter((s: any) => s.eventType !== "trial_expiration").length; const trials = subs.filter((s: any) => s.eventType === "trial_expiration").length; const parts: string[] = []; if (renewals) parts.push(renewals + " renewal" + (renewals > 1 ? "s" : "")); if (trials) parts.push(trials + " trial" + (trials > 1 ? "s" : "")); return parts.join(", ") || "event"; })()}
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="w-56 p-0" align="start">
@@ -162,7 +162,7 @@ export default function CalendarPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">No upcoming renewals.</p>
+              <p className="text-xs text-muted-foreground">No upcoming events.</p>
             )}
           </section>
         </Reveal>

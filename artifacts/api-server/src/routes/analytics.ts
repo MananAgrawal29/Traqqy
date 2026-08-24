@@ -1,12 +1,25 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { subscriptionsTable, categoriesTable } from "@workspace/db";
+import { subscriptionsTable, categoriesTable, subscriptionSharesTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
 import { calcEquivalents } from "../lib/billing";
-import type { BillingCycle } from "../lib/billing";
 
 const router = Router();
+
+/** Get the effective price: userShare for shared, full price otherwise */
+async function getEffectiveMonthlyAmount(sub: any): Promise<number> {
+  const subType = sub.subscriptionType || "recurring";
+  if (subType === "lifetime" || subType === "trial") return 0;
+  let price = parseFloat(sub.price);
+  if (sub.isShared) {
+    const shares = await db.select().from(subscriptionSharesTable).where(eq(subscriptionSharesTable.subscriptionId, sub.id));
+    const userShare = shares.find((s: any) => s.isCurrentUser);
+    if (userShare) price = parseFloat(userShare.amount);
+  }
+  const { monthlyEquivalent } = calcEquivalents(price, sub.billingCycle);
+  return monthlyEquivalent;
+}
 
 router.get("/spending-by-category", requireAuth, async (req, res) => {
   const userId = getUserId(req);
@@ -22,8 +35,8 @@ router.get("/spending-by-category", requireAuth, async (req, res) => {
     let total = 0;
 
     for (const row of rows) {
-      const price = parseFloat(row.subscriptions.price);
-      const { monthlyEquivalent } = calcEquivalents(price, row.subscriptions.billingCycle as BillingCycle);
+      const monthlyEquivalent = await getEffectiveMonthlyAmount({ ...row.subscriptions, billingCycle: row.subscriptions.billingCycle });
+      if (monthlyEquivalent === 0) continue;
       total += monthlyEquivalent;
 
       const key = row.categories ? String(row.categories.id) : "uncategorized";
@@ -87,8 +100,8 @@ router.get("/monthly-trend", requireAuth, async (req, res) => {
 
     // Distribute each subscription's monthly cost to months it was/is active
     for (const sub of rows) {
-      const price = parseFloat(sub.price);
-      const { monthlyEquivalent } = calcEquivalents(price, sub.billingCycle as BillingCycle);
+      const monthlyEquivalent = await getEffectiveMonthlyAmount(sub);
+      if (monthlyEquivalent === 0) continue;
       const createdAt = new Date(sub.createdAt);
 
       for (const m of months) {
@@ -119,8 +132,9 @@ router.get("/overview", requireAuth, async (req, res) => {
     let highestMonthly = 0;
 
     for (const sub of rows) {
+      const monthlyEquivalent = await getEffectiveMonthlyAmount(sub);
+      if (monthlyEquivalent === 0) continue;
       const price = parseFloat(sub.price);
-      const { monthlyEquivalent, annualEquivalent } = calcEquivalents(price, sub.billingCycle as BillingCycle);
       totalMonthly += monthlyEquivalent;
       if (monthlyEquivalent > highestMonthly) {
         highestMonthly = monthlyEquivalent;

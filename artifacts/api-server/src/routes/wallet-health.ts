@@ -22,6 +22,7 @@ router.get("/", requireAuth, async (req, res) => {
       try { prefs = JSON.parse(settingsRow.healthPreferences as string); } catch {}
     }
     const budget: number | null = prefs?.monthlyBudget || null;
+    const userCurrency: string = settingsRow?.currency || "INR";
     const feeling: string | null = prefs?.spendingFeeling || null;
     const priorityCategories: string[] = prefs?.priorityCategories || [];
 
@@ -34,7 +35,7 @@ router.get("/", requireAuth, async (req, res) => {
 
     for (const sub of subs) {
       const { monthlyEquivalent } = calcEquivalents(parseFloat(sub.price), sub.billingCycle as BillingCycle);
-      const days = daysUntil(sub.renewalDate);
+      const days = sub.subscriptionType === "lifetime" ? null : (sub.renewalDate ? daysUntil(sub.renewalDate) : null);
       const entry = { ...sub, price: parseFloat(sub.price), monthlyEquivalent, daysUntilRenewal: days,
         categoryName: sub.categoryId ? categoryMap.get(sub.categoryId) : undefined };
       if (sub.isActive && !sub.isArchived) { active.push(entry); totalMonthly += monthlyEquivalent; }
@@ -84,10 +85,10 @@ router.get("/", requireAuth, async (req, res) => {
     if (budget && budget > 0) {
       const pr = costIn30 / budget;
       if (countIn30 === 0) { renewalScore = 20; renewalDescription = "No renewals due in 30 days."; }
-      else if (pr <= 0.25) { renewalScore = 18; renewalDescription = "Low renewal pressure. " + "₹" + Math.round(costIn30) + " due in 30 days."; }
-      else if (pr <= 0.5) { renewalScore = 14; renewalDescription = "Moderate renewal pressure. " + "₹" + Math.round(costIn30) + " due in 30 days."; }
-      else if (pr <= 0.75) { renewalScore = 8; renewalDescription = "Significant renewal concentration. " + "₹" + Math.round(costIn30) + " due."; }
-      else if (pr <= 1) { renewalScore = 4; renewalDescription = "High pressure. " + "₹" + Math.round(costIn30) + " due vs " + "₹" + budget + " budget."; }
+      else if (pr <= 0.25) { renewalScore = 18; renewalDescription = "Low renewal pressure. " + Math.round(costIn30) + " " + userCurrency + " due in 30 days."; }
+      else if (pr <= 0.5) { renewalScore = 14; renewalDescription = "Moderate renewal pressure. " + Math.round(costIn30) + " " + userCurrency + " due in 30 days."; }
+      else if (pr <= 0.75) { renewalScore = 8; renewalDescription = "Significant renewal concentration. " + Math.round(costIn30) + " " + userCurrency + " due."; }
+      else if (pr <= 1) { renewalScore = 4; renewalDescription = "High pressure. " + Math.round(costIn30) + " " + userCurrency + " due vs " + "" + budget + " " + userCurrency + " budget."; }
       else { renewalScore = 0; renewalDescription = "Upcoming renewals exceed your budget."; }
     } else {
       if (countIn30 === 0) { renewalScore = 20; renewalDescription = "No renewals due in 30 days."; }
@@ -150,11 +151,11 @@ router.get("/", requireAuth, async (req, res) => {
     // RECOMMENDATIONS
     const recs: any[] = [];
     if (!budget) recs.push({ id: "set_budget", title: "Set a monthly budget", description: "Adding a budget makes your Health score personalized and meaningful.", impact: "medium" });
-    else if (totalMonthly > budget) recs.push({ id: "over_budget", title: "You are over your budget", description: "Spending ₹" + Math.round(totalMonthly) + "/month vs ₹" + budget + "/month budget.", impact: "high", link: "/subscriptions" });
+    else if (totalMonthly > budget) recs.push({ id: "over_budget", title: "You are over your budget", description: "Spending " + Math.round(totalMonthly) + " " + userCurrency + "/month vs " + budget + " " + userCurrency + "/month budget.", impact: "high", link: "/subscriptions" });
     if (feeling === "too_much" && spendingScore >= 24) recs.push({ id: "feeling_ok", title: "Your spending is within budget", description: "You mentioned wanting to reduce spending, but you are within budget.", impact: "low", link: "/subscriptions" });
     if (countIn7 > 0) {
       const next = active.filter(s => s.daysUntilRenewal !== null && s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 7).sort((a,b) => a.daysUntilRenewal - b.daysUntilRenewal);
-      if (next.length > 0) recs.push({ id: "upcoming", title: next[0].name + " renews in " + next[0].daysUntilRenewal + " days", description: "₹" + next[0].price.toFixed(0) + " will be charged soon.", impact: "medium", link: "/calendar" });
+      if (next.length > 0) recs.push({ id: "upcoming", title: next[0].name + " renews in " + next[0].daysUntilRenewal + " days", description: next[0].price.toFixed(0) + " " + next[0].currency + " will be charged soon.", impact: "medium", link: "/calendar" });
     }
     if (staleCount > 0) recs.push({ id: "update_dates", title: "Update " + staleCount + " renewal date" + (staleCount > 1 ? "s" : ""), description: "Past renewal dates can be updated to keep tracking accurate.", impact: "medium", link: "/subscriptions" });
     if (priorityCategories.length > 0 && active.length > 0) {
@@ -162,7 +163,7 @@ router.get("/", requireAuth, async (req, res) => {
       const nonPriMonthly = nonPri.reduce((sum,s) => sum + s.monthlyEquivalent, 0);
       if (nonPriMonthly > 0 && nonPriMonthly > totalMonthly * 0.2) {
         const names = [...new Set(nonPri.map(s => s.categoryName).filter(Boolean))].join(", ");
-        recs.push({ id: "non_priority", title: "Review non-priority spending", description: "₹" + Math.round(nonPriMonthly) + "/month goes to " + names + ", which you did not mark as a priority.", impact: "medium", link: "/subscriptions" });
+        recs.push({ id: "non_priority", title: "Review non-priority spending", description: Math.round(nonPriMonthly) + " " + userCurrency + "/month goes to " + names + ", which you did not mark as a priority.", impact: "medium", link: "/subscriptions" });
       }
     }
 

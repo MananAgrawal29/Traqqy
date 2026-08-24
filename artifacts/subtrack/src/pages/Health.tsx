@@ -72,7 +72,7 @@ export default function Health() {
     }
     queryClient.invalidateQueries({ queryKey: ["wallet-health"] });
     updateSettings.mutate(
-      { data: { healthPreferences: prefs as unknown as Record<string, unknown> } },
+      { data: { healthPreferences: JSON.stringify(prefs) } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });

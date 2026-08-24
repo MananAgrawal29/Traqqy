@@ -5,6 +5,13 @@
  * SubTrack – Subscription Tracker API
  * OpenAPI spec version: 0.1.0
  */
+export interface SubscriptionShare {
+  id?: number;
+  name: string;
+  amount: number;
+  isCurrentUser: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -20,6 +27,38 @@ export const SubscriptionBillingCycle = {
   yearly: 'yearly',
 } as const;
 
+export type SubscriptionSubscriptionType = typeof SubscriptionSubscriptionType[keyof typeof SubscriptionSubscriptionType];
+
+
+export const SubscriptionSubscriptionType = {
+  recurring: 'recurring',
+  trial: 'trial',
+  lifetime: 'lifetime',
+} as const;
+
+/**
+ * Billing cycle after trial converts (null if not a trial)
+ * @nullable
+ */
+export type SubscriptionRecurringBillingCycle = typeof SubscriptionRecurringBillingCycle[keyof typeof SubscriptionRecurringBillingCycle] | null;
+
+
+export const SubscriptionRecurringBillingCycle = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  semi_annual: 'semi_annual',
+  yearly: 'yearly',
+} as const;
+
+export type SubscriptionSplitMode = typeof SubscriptionSplitMode[keyof typeof SubscriptionSplitMode];
+
+
+export const SubscriptionSplitMode = {
+  equal: 'equal',
+  custom: 'custom',
+} as const;
+
 export interface Subscription {
   id: number;
   userId: string;
@@ -33,8 +72,11 @@ export interface Subscription {
   price: number;
   currency: string;
   billingCycle: SubscriptionBillingCycle;
-  /** ISO date string YYYY-MM-DD */
-  renewalDate: string;
+  /**
+     * ISO date string YYYY-MM-DD (null for lifetime subscriptions)
+     * @nullable
+     */
+  renewalDate?: string | null;
   /** @nullable */
   paymentMethod?: string | null;
   /** @nullable */
@@ -50,6 +92,41 @@ export interface Subscription {
      * @nullable
      */
   daysUntilRenewal?: number | null;
+  subscriptionType?: SubscriptionSubscriptionType;
+  /**
+     * Trial end date YYYY-MM-DD (null if not a trial)
+     * @nullable
+     */
+  trialEndsAt?: string | null;
+  /**
+     * Whether trial converts to recurring (null if not a trial)
+     * @nullable
+     */
+  trialConvertsToRecurring?: boolean | null;
+  /**
+     * Price after trial converts (null if not a trial)
+     * @nullable
+     */
+  recurringPrice?: number | null;
+  /**
+     * Billing cycle after trial converts (null if not a trial)
+     * @nullable
+     */
+  recurringBillingCycle?: SubscriptionRecurringBillingCycle;
+  /**
+     * Purchase date for lifetime subscriptions
+     * @nullable
+     */
+  purchaseDate?: string | null;
+  isShared: boolean;
+  splitMode: SubscriptionSplitMode;
+  /** Cost sharing breakdown (empty if personal) */
+  shares?: SubscriptionShare[];
+  /**
+     * Current user's share amount (null if personal or no shares)
+     * @nullable
+     */
+  userShareAmount?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -65,6 +142,43 @@ export const SubscriptionInputBillingCycle = {
   yearly: 'yearly',
 } as const;
 
+export type SubscriptionInputSubscriptionType = typeof SubscriptionInputSubscriptionType[keyof typeof SubscriptionInputSubscriptionType];
+
+
+export const SubscriptionInputSubscriptionType = {
+  recurring: 'recurring',
+  trial: 'trial',
+  lifetime: 'lifetime',
+} as const;
+
+/**
+ * @nullable
+ */
+export type SubscriptionInputRecurringBillingCycle = typeof SubscriptionInputRecurringBillingCycle[keyof typeof SubscriptionInputRecurringBillingCycle] | null;
+
+
+export const SubscriptionInputRecurringBillingCycle = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  semi_annual: 'semi_annual',
+  yearly: 'yearly',
+} as const;
+
+export type SubscriptionInputSplitMode = typeof SubscriptionInputSplitMode[keyof typeof SubscriptionInputSplitMode];
+
+
+export const SubscriptionInputSplitMode = {
+  equal: 'equal',
+  custom: 'custom',
+} as const;
+
+export type SubscriptionInputSharesItem = {
+  name: string;
+  amount: number;
+  isCurrentUser: boolean;
+};
+
 export interface SubscriptionInput {
   /** @minLength 1 */
   name: string;
@@ -73,12 +187,33 @@ export interface SubscriptionInput {
   /** @minimum 0 */
   price: number;
   currency: string;
-  billingCycle: SubscriptionInputBillingCycle;
-  /** ISO date YYYY-MM-DD */
-  renewalDate: string;
+  billingCycle?: SubscriptionInputBillingCycle;
+  /** ISO date YYYY-MM-DD (required for recurring) */
+  renewalDate?: string;
   paymentMethod?: string;
   notes?: string;
   isActive?: boolean;
+  subscriptionType?: SubscriptionInputSubscriptionType;
+  /**
+     * Trial end date YYYY-MM-DD
+     * @nullable
+     */
+  trialEndsAt?: string | null;
+  /** @nullable */
+  trialConvertsToRecurring?: boolean | null;
+  /** @nullable */
+  recurringPrice?: number | null;
+  /** @nullable */
+  recurringBillingCycle?: SubscriptionInputRecurringBillingCycle;
+  isShared?: boolean;
+  splitMode?: SubscriptionInputSplitMode;
+  /** Required when isShared is true */
+  shares?: SubscriptionInputSharesItem[];
+  /**
+     * Purchase date for lifetime subscriptions
+     * @nullable
+     */
+  purchaseDate?: string | null;
 }
 
 export type SubscriptionUpdateBillingCycle = typeof SubscriptionUpdateBillingCycle[keyof typeof SubscriptionUpdateBillingCycle];
@@ -92,6 +227,43 @@ export const SubscriptionUpdateBillingCycle = {
   yearly: 'yearly',
 } as const;
 
+export type SubscriptionUpdateSubscriptionType = typeof SubscriptionUpdateSubscriptionType[keyof typeof SubscriptionUpdateSubscriptionType];
+
+
+export const SubscriptionUpdateSubscriptionType = {
+  recurring: 'recurring',
+  trial: 'trial',
+  lifetime: 'lifetime',
+} as const;
+
+/**
+ * @nullable
+ */
+export type SubscriptionUpdateRecurringBillingCycle = typeof SubscriptionUpdateRecurringBillingCycle[keyof typeof SubscriptionUpdateRecurringBillingCycle] | null;
+
+
+export const SubscriptionUpdateRecurringBillingCycle = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  semi_annual: 'semi_annual',
+  yearly: 'yearly',
+} as const;
+
+export type SubscriptionUpdateSplitMode = typeof SubscriptionUpdateSplitMode[keyof typeof SubscriptionUpdateSplitMode];
+
+
+export const SubscriptionUpdateSplitMode = {
+  equal: 'equal',
+  custom: 'custom',
+} as const;
+
+export type SubscriptionUpdateSharesItem = {
+  name: string;
+  amount: number;
+  isCurrentUser: boolean;
+};
+
 export interface SubscriptionUpdate {
   /** @minLength 1 */
   name?: string;
@@ -103,12 +275,28 @@ export interface SubscriptionUpdate {
   price?: number;
   currency?: string;
   billingCycle?: SubscriptionUpdateBillingCycle;
-  renewalDate?: string;
+  /** @nullable */
+  renewalDate?: string | null;
   /** @nullable */
   paymentMethod?: string | null;
   /** @nullable */
   notes?: string | null;
   isActive?: boolean;
+  subscriptionType?: SubscriptionUpdateSubscriptionType;
+  /** @nullable */
+  trialEndsAt?: string | null;
+  /** @nullable */
+  trialConvertsToRecurring?: boolean | null;
+  /** @nullable */
+  recurringPrice?: number | null;
+  /** @nullable */
+  recurringBillingCycle?: SubscriptionUpdateRecurringBillingCycle;
+  isShared?: boolean;
+  splitMode?: SubscriptionUpdateSplitMode;
+  /** Full list of shares to replace existing */
+  shares?: SubscriptionUpdateSharesItem[];
+  /** @nullable */
+  purchaseDate?: string | null;
 }
 
 export interface Category {
@@ -350,10 +538,13 @@ export interface UserSettings {
   currency: string;
   theme: UserSettingsTheme;
   timezone: string;
-  /** @nullable */
-  healthPreferences?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
+  /**
+     * JSON-encoded health preferences
+     * @nullable
+     */
+  healthPreferences?: string | null;
 }
 
 export type UserSettingsUpdateTheme = typeof UserSettingsUpdateTheme[keyof typeof UserSettingsUpdateTheme];
@@ -371,7 +562,11 @@ export interface UserSettingsUpdate {
   currency?: string;
   theme?: UserSettingsUpdateTheme;
   timezone?: string;
-  healthPreferences?: Record<string, unknown> | null;
+  /**
+     * JSON-encoded health preferences
+     * @nullable
+     */
+  healthPreferences?: string | null;
 }
 
 /**

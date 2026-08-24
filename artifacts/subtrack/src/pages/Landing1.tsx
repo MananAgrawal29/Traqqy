@@ -23,6 +23,7 @@ import {
   DoodleCheck,
 } from "@/components/doodles";
 import WalletAnimation from "@/components/WalletAnimation";
+import { TraqqyBrand } from "@/components/layout/TraqqyBrand";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    THEME (syncs with app ThemeProvider)
@@ -137,8 +138,7 @@ function Nav({ theme }: { theme: ReturnType<typeof useTheme> }) {
       <div className="absolute inset-0 border-b border-zinc-200/60 dark:border-white/[0.06]" style={{ opacity: bgVal }} />
       <nav className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-6">
         <a href="/" className="flex items-center gap-2.5 group">
-          <motion.img src="/logo-icon.svg" alt="Traqqy" className="h-7 w-7" whileHover={{ scale: 1.08, rotate: -4 }} transition={spring} draggable={false} />
-          <span className="text-[15px] font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Traqqy</span>
+          <TraqqyBrand variant="wordmark" size={28} />
         </a>
         <div className="hidden items-center gap-1 md:flex">
           {[{ l: "Features", h: "#features" }, { l: "GitHub", h: GITHUB_URL }].map((n) => (
@@ -971,8 +971,7 @@ function Footer() {
     <footer className="border-t border-zinc-200/60 dark:border-white/[0.06] px-5 py-8 sm:px-6">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
         <div className="flex items-center gap-2">
-          <img src="/logo-icon.svg" alt="Traqqy" className="h-6 w-6" draggable={false} />
-          <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">Traqqy</span>
+          <TraqqyBrand variant="wordmark" size={24} animate={false} />
         </div>
         <div className="flex items-center gap-6">
           <a href={GITHUB_URL} className="inline-flex items-center gap-1.5 text-sm text-zinc-400 dark:text-zinc-500 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300">
