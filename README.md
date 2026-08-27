@@ -322,7 +322,7 @@ pnpm dev
 <br>
 <br>
 
-**Built by Manan Agrawal**
+**Built with love by Manan Agrawal**
 
 Traqqy — Subscriptions. Sorted.
 
