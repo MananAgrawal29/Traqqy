@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
+import { currencies } from "@/data/currencies";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Mail } from "lucide-react";
 
@@ -302,11 +303,11 @@ export default function Settings() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="USD">USD ($)</SelectItem>
-                    <SelectItem value="EUR">EUR (€)</SelectItem>
-                    <SelectItem value="GBP">GBP (£)</SelectItem>
-                    <SelectItem value="CAD">CAD ($)</SelectItem>
-                    <SelectItem value="AUD">AUD ($)</SelectItem>
+                    {currencies.map((c: any) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.flag} {c.code} ({c.symbol})
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">This is the currency used for your dashboard summaries.</p>

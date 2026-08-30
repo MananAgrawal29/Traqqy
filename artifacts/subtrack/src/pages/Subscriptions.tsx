@@ -352,6 +352,7 @@ export default function Subscriptions() {
                   onArchive={handleArchive}
                   onRestore={handleRestore}
                   onDelete={(id) => setDeleteId(id)}
+                  onRowClick={handleEdit}
                 />
               ))}
             </AnimatePresence>

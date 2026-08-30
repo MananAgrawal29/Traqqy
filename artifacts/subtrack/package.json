@@ -74,7 +74,8 @@
     "vaul": "^1.1.2",
     "vite": "catalog:",
     "wouter": "^3.3.5",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@workspace/currencies": "workspace:*"
   },
   "dependencies": {
     "@clerk/react": "^6.12.5",

@@ -467,13 +467,10 @@ export interface DashboardSummary {
   totalArchivedSubscriptions: number;
   monthlySpend: number;
   yearlySpend: number;
-  /** Renewals in the next 7 days */
   upcomingRenewalsCount: number;
-  /**
-     * Days until next renewal, null if no subscriptions
-     * @nullable
-     */
   nextRenewalDays: number | null;
+  defaultCurrency: string;
+  conversionAvailable: boolean;
 }
 
 export interface CategorySpend {
@@ -494,6 +491,8 @@ export interface MonthlyTrend {
   label: string;
   totalAmount: number;
   subscriptionCount: number;
+  defaultCurrency: string;
+  conversionAvailable: boolean;
 }
 
 /**
@@ -509,10 +508,11 @@ export type AnalyticsOverviewHighestExpense = {
 export interface AnalyticsOverview {
   totalAnnualSpend: number;
   averageMonthlySpend: number;
-  /** @nullable */
   highestExpense: AnalyticsOverviewHighestExpense;
   averageSubscriptionCost: number;
   totalSubscriptions: number;
+  defaultCurrency: string;
+  conversionAvailable: boolean;
 }
 
 export interface CalendarDay {

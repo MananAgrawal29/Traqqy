@@ -34,6 +34,8 @@ export default function Analytics() {
     useGetMonthlyTrend();
   const { data: categorySpends, isLoading: loadingCategories } =
     useGetSpendingByCategory();
+  
+  const currency = overview?.defaultCurrency || "INR";
 
   return (
     <div className="p-6 md:p-10 space-y-12 max-w-6xl mx-auto relative">
@@ -47,7 +49,7 @@ export default function Analytics() {
           ) : (
             <div className="flex items-baseline gap-3">
               <span className="text-5xl md:text-6xl font-bold tracking-tight font-mono text-foreground">
-                {formatCurrency(overview?.totalAnnualSpend || 0)}
+                {formatCurrency(overview?.totalAnnualSpend || 0, currency)}
               </span>
               <span className="text-lg text-muted-foreground font-medium">
                 / year
@@ -59,7 +61,7 @@ export default function Analytics() {
             <span>
               Average{" "}
               <span className="font-medium text-foreground font-mono">
-                {formatCurrency(overview?.averageMonthlySpend || 0)}
+                {formatCurrency(overview?.averageMonthlySpend || 0, currency)}
               </span>{" "}
               / month
             </span>
@@ -72,7 +74,8 @@ export default function Analytics() {
                 at{" "}
                 <span className="font-mono">
                   {formatCurrency(
-                    overview.highestExpense.monthlyEquivalent || 0
+                    overview.highestExpense.monthlyEquivalent || 0,
+                    currency
                   )}
                 </span>
                 /mo
@@ -98,7 +101,7 @@ export default function Analytics() {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={monthlyTrend}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                      margin={{ top: 10, right: 10, left: 20, bottom: 0 }}
                     >
                       <defs>
                         <linearGradient
@@ -142,8 +145,7 @@ export default function Analytics() {
                           fontSize: 12,
                           fill: "hsl(var(--muted-foreground))",
                         }}
-                        tickFormatter={(value) => `₹${value}`}
-                        dx={-10}
+                        tickFormatter={(value) => formatCurrency(value, currency)}
                       />
                       <Tooltip
                         contentStyle={{
@@ -152,7 +154,7 @@ export default function Analytics() {
                           backgroundColor: "hsl(var(--card))",
                         }}
                         formatter={(value: number) => [
-                          formatCurrency(value),
+                          formatCurrency(value, currency),
                           "Spend",
                         ]}
                       />
@@ -211,7 +213,7 @@ export default function Analytics() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number) => formatCurrency(value)}
+                        formatter={(value: number) => formatCurrency(value, currency)}
                         contentStyle={{
                           borderRadius: "8px",
                           border: "1px solid hsl(var(--border))",

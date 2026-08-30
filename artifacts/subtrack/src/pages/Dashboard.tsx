@@ -36,6 +36,7 @@ export default function Dashboard() {
   const { data: healthData } = useQuery<{ score: number; status: string }>({ queryKey: ["wallet-health"], queryFn: async () => { return await customFetch<{ score: number; status: string }>("/api/wallet-health"); } });
   const { data: categorySpends, isLoading: loadingCategories } =
     useGetSpendingByCategory();
+  const currency = summary?.defaultCurrency || "INR";
 
   return (
     <div className="p-6 md:p-10 space-y-12 max-w-5xl mx-auto relative">
@@ -50,7 +51,7 @@ export default function Dashboard() {
           ) : (
             <div className="flex items-baseline gap-3">
               <span className="text-5xl md:text-6xl font-bold tracking-tight font-mono text-foreground">
-                {formatCurrency(summary?.monthlySpend || 0)}
+                {formatCurrency(summary?.monthlySpend || 0, currency)}
               </span>
               <span className="text-lg text-muted-foreground font-medium">
                 / month
@@ -229,7 +230,7 @@ export default function Dashboard() {
                         {cat.categoryName}
                       </span>
                       <span className="font-mono text-muted-foreground">
-                        {formatCurrency(cat.monthlyAmount)}
+                        {formatCurrency(cat.monthlyAmount, currency)}
                       </span>
                     </div>
                     <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">

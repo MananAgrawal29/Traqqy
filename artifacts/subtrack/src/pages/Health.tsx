@@ -18,7 +18,7 @@ interface HealthData {
   score: number; status: string;
   factors: Array<{ id: string; label: string; score: number; maxScore: number; description: string }>;
   recommendations: Array<{ id: string; title: string; description: string; impact: string; link?: string }>;
-  summary: { monthlySpend: number; yearlySpend: number; activeCount: number; renewalIn7Days: number; renewalIn30Days: number; averagePerSubscription: number };
+  summary: { monthlySpend: number; yearlySpend: number; activeCount: number; renewalIn7Days: number; renewalIn30Days: number; averagePerSubscription: number; defaultCurrency?: string; conversionAvailable?: boolean };
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -49,6 +49,7 @@ function ScoreRing({ score }: { score: number }) {
 export default function Health() {
   const queryClient = useQueryClient();
   const { data: settings } = useGetSettings();
+  
   const updateSettings = useUpdateSettings();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEditingPrefs, setIsEditingPrefs] = useState(false);
@@ -92,6 +93,7 @@ export default function Health() {
       return await customFetch<HealthData>("/api/wallet-health");
     },
   });
+  const currency = data?.summary?.defaultCurrency || "INR";
   const config = data ? STATUS_CONFIG[data.status] || STATUS_CONFIG.healthy : STATUS_CONFIG.healthy;
 
   return (
@@ -124,7 +126,7 @@ export default function Health() {
                 </p>
                 {healthPrefs?.monthlyBudget && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    Budget: {formatCurrency(healthPrefs.monthlyBudget)}/month
+                    Budget: {formatCurrency(healthPrefs.monthlyBudget, currency)}/month
                   </p>
                 )}
               </>
@@ -182,7 +184,7 @@ export default function Health() {
             <section>
               <h2 className="text-lg font-semibold tracking-tight mb-5">Subscription spending</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[{ label: "Monthly", value: formatCurrency(data.summary.monthlySpend) }, { label: "Yearly", value: formatCurrency(data.summary.yearlySpend) }, { label: "Active", value: data.summary.activeCount + " subscriptions" }, { label: "Avg / sub", value: formatCurrency(data.summary.averagePerSubscription) }].map((item) => (
+                {[{ label: "Monthly", value: formatCurrency(data.summary.monthlySpend, currency) }, { label: "Yearly", value: formatCurrency(data.summary.yearlySpend, currency) }, { label: "Active", value: data.summary.activeCount + " subscriptions" }, { label: "Avg / sub", value: formatCurrency(data.summary.averagePerSubscription, currency) }].map((item) => (
                   <div key={item.label} className="rounded-xl border border-border bg-card p-4"><p className="text-xs text-muted-foreground">{item.label}</p><p className="text-lg font-semibold font-mono mt-1">{item.value}</p></div>
                 ))}
               </div>

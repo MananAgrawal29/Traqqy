@@ -7,3 +7,4 @@ export * from "./reminders";
 export * from "./gmailConnections";
 export * from "./autoImportScans";
 export * from "./autoImportCandidates";
+export * from "./fxRates";

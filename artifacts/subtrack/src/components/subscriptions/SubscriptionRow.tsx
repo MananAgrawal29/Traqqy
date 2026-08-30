@@ -20,6 +20,7 @@ interface SubscriptionRowProps {
   onArchive: (id: number) => void;
   onRestore: (id: number) => void;
   onDelete: (id: number) => void;
+  onRowClick?: (sub: Subscription) => void;
 }
 
 export default function SubscriptionRow({
@@ -28,6 +29,7 @@ export default function SubscriptionRow({
   onArchive,
   onRestore,
   onDelete,
+  onRowClick,
 }: SubscriptionRowProps) {
   const subType = sub.subscriptionType || "recurring";
   const trialEndsAt = sub.trialEndsAt as string | null;
@@ -62,6 +64,13 @@ export default function SubscriptionRow({
           ? "text-warning font-medium"
           : "text-muted-foreground";
 
+  const handleRowKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onRowClick?.(sub);
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -70,8 +79,13 @@ export default function SubscriptionRow({
       exit={{ opacity: 0, y: -6 }}
       whileHover={{ x: 2 }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      tabIndex={0}
+      role="row"
+      aria-label={`${sub.name} — ${formatAmount(sub.price, sub.currency)}. Press Enter to edit.`}
+      onClick={() => onRowClick?.(sub)}
+      onKeyDown={handleRowKeyDown}
       className={cn(
-        "group flex items-center gap-4 py-3.5 px-3 -mx-3 rounded-lg hover:bg-accent/5 transition-colors cursor-default",
+        "group flex items-center gap-4 py-3.5 px-3 -mx-3 rounded-lg hover:bg-accent/5 transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         sub.isArchived && "opacity-50",
         !sub.isActive && !sub.isArchived && "opacity-70"
       )}
@@ -163,11 +177,16 @@ export default function SubscriptionRow({
         )}
       </div>
 
-      {/* Actions */}
-      <div className="shrink-0">
+      {/* Actions — stopPropagation prevents row click when interacting with the menu */}
+      <div className="shrink-0" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent/10">
+            <button
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-accent/10"
+              aria-label="Subscription actions"
+            >
               <MoreHorizontal className="h-4 w-4" />
             </button>
           </DropdownMenuTrigger>

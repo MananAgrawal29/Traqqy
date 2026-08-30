@@ -25,7 +25,8 @@
     "http-proxy-middleware": "^4.2.0",
     "pino": "^9.14.0",
     "pino-http": "^10.5.0",
-    "resend": "^6.22.0"
+    "resend": "^6.22.0",
+    "@workspace/currencies": "workspace:*"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

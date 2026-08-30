@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { subscriptionsTable, userSettingsTable, categoriesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
+import { getOrFetchRates } from "../lib/fx-cache";
+import { convertAmount, roundMoney } from "@workspace/currencies/convert";
 import { calcEquivalents, daysUntil } from "../lib/billing";
 import type { BillingCycle } from "../lib/billing";
 
@@ -22,7 +24,7 @@ router.get("/", requireAuth, async (req, res) => {
       try { prefs = JSON.parse(settingsRow.healthPreferences as string); } catch {}
     }
     const budget: number | null = prefs?.monthlyBudget || null;
-    const userCurrency: string = settingsRow?.currency || "INR";
+    const userCurrency: string = settingsRow?.currency || "USD";
     const feeling: string | null = prefs?.spendingFeeling || null;
     const priorityCategories: string[] = prefs?.priorityCategories || [];
 
@@ -48,16 +50,57 @@ router.get("/", requireAuth, async (req, res) => {
         score: null, status: "no_data",
         factors: [],
         recommendations: [{ id: "add_sub", title: "Add a subscription", description: "Add your first subscription to start building your Wallet Health.", impact: "medium", link: "/subscriptions" }],
-        summary: { monthlySpend: 0, yearlySpend: 0, activeCount: 0, renewalIn7Days: 0, renewalIn30Days: 0, costIn30Days: 0, averagePerSubscription: 0, budget, spendingVsBudget: null },
+        summary: { monthlySpend: 0, yearlySpend: 0, activeCount: 0, renewalIn7Days: 0, renewalIn30Days: 0, costIn30Days: 0, averagePerSubscription: 0, budget, spendingVsBudget: null, defaultCurrency: userCurrency, conversionAvailable: true },
       });
       return;
     }
+
+    // Convert totalMonthly to default currency
+    const allSubItems = active.map(s => ({ amount: s.monthlyEquivalent, currency: s.currency || "USD" }));
+    let convertedMonthly = totalMonthly;
+    let conversionAvailable = true;
+    const defaultCurrency = userCurrency;
+    if (allSubItems.length > 0 && !allSubItems.every(i => i.currency === defaultCurrency)) {
+      const rates = await getOrFetchRates(db);
+      if (rates) {
+        convertedMonthly = 0;
+        for (const item of allSubItems) {
+          const c = convertAmount(item.amount, item.currency, defaultCurrency, rates);
+          if (c === null) { conversionAvailable = false; convertedMonthly += item.amount; }
+          else { convertedMonthly += c; }
+        }
+      } else {
+        conversionAvailable = false;
+      }
+    }
+    convertedMonthly = roundMoney(convertedMonthly);
+
+    // Also convert costIn30/costIn7
+    const renewItems30 = active.filter(s => s.daysUntilRenewal !== null && s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 30).map(s => ({ amount: s.monthlyEquivalent, currency: s.currency || "USD" }));
+    const renewItems7 = active.filter(s => s.daysUntilRenewal !== null && s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 7).map(s => ({ amount: s.monthlyEquivalent, currency: s.currency || "USD" }));
+    
+    let convertedCostIn30 = 0, convertedCostIn7 = 0;
+    if (renewItems30.length > 0 && !renewItems30.every(i => i.currency === defaultCurrency)) {
+      const rates = await getOrFetchRates(db);
+      if (rates) {
+        for (const item of renewItems30) { const c = convertAmount(item.amount, item.currency, defaultCurrency, rates); convertedCostIn30 += c ?? item.amount; }
+        for (const item of renewItems7) { const c = convertAmount(item.amount, item.currency, defaultCurrency, rates); convertedCostIn7 += c ?? item.amount; }
+      } else {
+        convertedCostIn30 = renewItems30.reduce((s,i) => s + i.amount, 0);
+        convertedCostIn7 = renewItems7.reduce((s,i) => s + i.amount, 0);
+      }
+    } else {
+      convertedCostIn30 = renewItems30.reduce((s,i) => s + i.amount, 0);
+      convertedCostIn7 = renewItems7.reduce((s,i) => s + i.amount, 0);
+    }
+    convertedCostIn30 = roundMoney(convertedCostIn30);
+    convertedCostIn7 = roundMoney(convertedCostIn7);
 
     // FACTOR 1: SPENDING HEALTH (35 points)
     // Measures: monthly spend relative to user's own budget
     let spendingScore: number; let spendingDescription: string;
     if (budget && budget > 0) {
-      const ratio = totalMonthly / budget;
+      const ratio = convertedMonthly / budget;
       if (ratio <= 0.5) { spendingScore = 35; spendingDescription = "Well within your budget at " + Math.round(ratio*100) + "%."; }
       else if (ratio <= 0.75) { spendingScore = 30; spendingDescription = "At " + Math.round(ratio*100) + "% of your budget. On track."; }
       else if (ratio <= 1) { spendingScore = 24; spendingDescription = "At " + Math.round(ratio*100) + "% of your budget. Approaching limit."; }
@@ -76,25 +119,25 @@ router.get("/", requireAuth, async (req, res) => {
     // FACTOR 2: RENEWAL PRESSURE (20 points)
     // Measures: upcoming renewal cost relative to budget or absolute thresholds
     let renewalScore: number; let renewalDescription: string;
-    let costIn7 = 0, costIn30 = 0, countIn7 = 0, countIn30 = 0;
+    let countIn7 = 0, countIn30 = 0;
     for (const s of active) {
       if (s.daysUntilRenewal === null) continue;
-      if (s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 7) { costIn7 += s.monthlyEquivalent; countIn7++; }
-      if (s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 30) { costIn30 += s.monthlyEquivalent; countIn30++; }
+      if (s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 7) { countIn7++; }
+      if (s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 30) { countIn30++; }
     }
     if (budget && budget > 0) {
-      const pr = costIn30 / budget;
+      const pr = convertedCostIn30 / budget;
       if (countIn30 === 0) { renewalScore = 20; renewalDescription = "No renewals due in 30 days."; }
-      else if (pr <= 0.25) { renewalScore = 18; renewalDescription = "Low renewal pressure. " + Math.round(costIn30) + " " + userCurrency + " due in 30 days."; }
-      else if (pr <= 0.5) { renewalScore = 14; renewalDescription = "Moderate renewal pressure. " + Math.round(costIn30) + " " + userCurrency + " due in 30 days."; }
-      else if (pr <= 0.75) { renewalScore = 8; renewalDescription = "Significant renewal concentration. " + Math.round(costIn30) + " " + userCurrency + " due."; }
-      else if (pr <= 1) { renewalScore = 4; renewalDescription = "High pressure. " + Math.round(costIn30) + " " + userCurrency + " due vs " + "" + budget + " " + userCurrency + " budget."; }
+      else if (pr <= 0.25) { renewalScore = 18; renewalDescription = "Low renewal pressure. " + Math.round(convertedCostIn30) + " " + userCurrency + " due in 30 days."; }
+      else if (pr <= 0.5) { renewalScore = 14; renewalDescription = "Moderate renewal pressure. " + Math.round(convertedCostIn30) + " " + userCurrency + " due in 30 days."; }
+      else if (pr <= 0.75) { renewalScore = 8; renewalDescription = "Significant renewal concentration. " + Math.round(convertedCostIn30) + " " + userCurrency + " due."; }
+      else if (pr <= 1) { renewalScore = 4; renewalDescription = "High pressure. " + Math.round(convertedCostIn30) + " " + userCurrency + " due vs " + "" + budget + " " + userCurrency + " budget."; }
       else { renewalScore = 0; renewalDescription = "Upcoming renewals exceed your budget."; }
     } else {
       if (countIn30 === 0) { renewalScore = 20; renewalDescription = "No renewals due in 30 days."; }
-      else if (costIn30 <= 500) { renewalScore = 18; renewalDescription = "Low renewal pressure."; }
-      else if (costIn30 <= 1500) { renewalScore = 14; renewalDescription = "Moderate renewal pressure."; }
-      else if (costIn30 <= 3000) { renewalScore = 8; renewalDescription = "Significant concentration."; }
+      else if (convertedCostIn30 <= 500) { renewalScore = 18; renewalDescription = "Low renewal pressure."; }
+      else if (convertedCostIn30 <= 1500) { renewalScore = 14; renewalDescription = "Moderate renewal pressure."; }
+      else if (convertedCostIn30 <= 3000) { renewalScore = 8; renewalDescription = "Significant concentration."; }
       else { renewalScore = 4; renewalDescription = "High renewal pressure."; }
     }
 
@@ -150,8 +193,7 @@ router.get("/", requireAuth, async (req, res) => {
 
     // RECOMMENDATIONS
     const recs: any[] = [];
-    if (!budget) recs.push({ id: "set_budget", title: "Set a monthly budget", description: "Adding a budget makes your Health score personalized and meaningful.", impact: "medium" });
-    else if (totalMonthly > budget) recs.push({ id: "over_budget", title: "You are over your budget", description: "Spending " + Math.round(totalMonthly) + " " + userCurrency + "/month vs " + budget + " " + userCurrency + "/month budget.", impact: "high", link: "/subscriptions" });
+    if (!budget) recs.push({ id: "set_budget", title: "Set a monthly budget", description: "Adding a budget makes your Health score personalized and meaningful.", impact: "medium" });      else if (convertedMonthly > budget) recs.push({ id: "over_budget", title: "You are over your budget", description: "Spending " + Math.round(convertedMonthly) + " " + userCurrency + "/month vs " + budget + " " + userCurrency + "/month budget.", impact: "high", link: "/subscriptions" });
     if (feeling === "too_much" && spendingScore >= 24) recs.push({ id: "feeling_ok", title: "Your spending is within budget", description: "You mentioned wanting to reduce spending, but you are within budget.", impact: "low", link: "/subscriptions" });
     if (countIn7 > 0) {
       const next = active.filter(s => s.daysUntilRenewal !== null && s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= 7).sort((a,b) => a.daysUntilRenewal - b.daysUntilRenewal);
@@ -160,8 +202,20 @@ router.get("/", requireAuth, async (req, res) => {
     if (staleCount > 0) recs.push({ id: "update_dates", title: "Update " + staleCount + " renewal date" + (staleCount > 1 ? "s" : ""), description: "Past renewal dates can be updated to keep tracking accurate.", impact: "medium", link: "/subscriptions" });
     if (priorityCategories.length > 0 && active.length > 0) {
       const nonPri = active.filter(s => s.categoryName && !priorityCategories.includes(s.categoryName));
-      const nonPriMonthly = nonPri.reduce((sum,s) => sum + s.monthlyEquivalent, 0);
-      if (nonPriMonthly > 0 && nonPriMonthly > totalMonthly * 0.2) {
+      const nonPriItems = nonPri.map(s => ({ amount: s.monthlyEquivalent, currency: s.currency || "USD" }));
+      const nonPriRates = nonPriItems.some(i => i.currency !== userCurrency) ? await getOrFetchRates(db) : null;
+      let nonPriMonthly = 0;
+      if (nonPriItems.length > 0) {
+        if (!nonPriItems.every(i => i.currency === userCurrency) && nonPriRates) {
+          for (const item of nonPriItems) {
+            const c = convertAmount(item.amount, item.currency, userCurrency, nonPriRates);
+            nonPriMonthly += c ?? item.amount;
+          }
+        } else {
+          nonPriMonthly = nonPriItems.reduce((sum, i) => sum + i.amount, 0);
+        }
+      }
+      if (nonPriMonthly > 0 && nonPriMonthly > convertedMonthly * 0.2) {
         const names = [...new Set(nonPri.map(s => s.categoryName).filter(Boolean))].join(", ");
         recs.push({ id: "non_priority", title: "Review non-priority spending", description: Math.round(nonPriMonthly) + " " + userCurrency + "/month goes to " + names + ", which you did not mark as a priority.", impact: "medium", link: "/subscriptions" });
       }
@@ -170,14 +224,16 @@ router.get("/", requireAuth, async (req, res) => {
     res.json({
       score: totalScore, status, factors, recommendations: recs,
       summary: {
-        monthlySpend: Math.round(totalMonthly * 100) / 100,
-        yearlySpend: Math.round(totalMonthly * 12 * 100) / 100,
+        monthlySpend: convertedMonthly,
+        yearlySpend: roundMoney(convertedMonthly * 12),
         activeCount: active.length,
         renewalIn7Days: countIn7, renewalIn30Days: countIn30,
-        costIn30Days: Math.round(costIn30 * 100) / 100,
-        averagePerSubscription: active.length > 0 ? Math.round((totalMonthly / active.length) * 100) / 100 : 0,
+        costIn30Days: convertedCostIn30,
+        averagePerSubscription: active.length > 0 ? roundMoney(convertedMonthly / active.length) : 0,
         budget,
-        spendingVsBudget: budget && budget > 0 ? Math.round((totalMonthly / budget) * 100) : null,
+        defaultCurrency,
+        conversionAvailable,
+        spendingVsBudget: budget && budget > 0 ? Math.round((convertedMonthly / budget) * 100) : null,
       },
     });
   } catch (err) {

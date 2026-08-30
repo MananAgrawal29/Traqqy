@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { currencies, COMMON_CURRENCY_CODES } from "@/data/currencies";
+import { currencies } from "@/data/currencies";
 
 interface Props {
   value: string;
@@ -27,8 +27,6 @@ const CurrencySelect = React.forwardRef<HTMLButtonElement, Props>(({ value, onVa
   const [open, setOpen] = useState(false);
 
   const selectedCurrency = currencies.find((c) => c.code === value);
-  const commonCurrencies = currencies.filter(c => COMMON_CURRENCY_CODES.includes(c.code));
-  const otherCurrencies = currencies.filter(c => !COMMON_CURRENCY_CODES.includes(c.code));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,31 +55,8 @@ const CurrencySelect = React.forwardRef<HTMLButtonElement, Props>(({ value, onVa
           <CommandInput placeholder="Search currency..." />
           <CommandList>
             <CommandEmpty>No currency found.</CommandEmpty>
-            <CommandGroup heading="Common">
-              {commonCurrencies.map((currency) => (
-                <CommandItem
-                  key={currency.code}
-                  value={`${currency.code} ${currency.name} ${currency.symbol}`}
-                  onSelect={() => {
-                    onValueChange(currency.code);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === currency.code ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <span className="mr-2 text-base leading-none">{currency.flag}</span>
-                  <span className="font-medium mr-2">{currency.code}</span>
-                  <span className="text-muted-foreground mr-2">{currency.symbol}</span>
-                  <span className="text-xs text-muted-foreground truncate">{currency.name}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandGroup heading="All Currencies">
-              {otherCurrencies.map((currency) => (
+            <CommandGroup>
+              {currencies.map((currency) => (
                 <CommandItem
                   key={currency.code}
                   value={`${currency.code} ${currency.name} ${currency.symbol}`}

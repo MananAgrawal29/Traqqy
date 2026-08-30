@@ -3,6 +3,10 @@ import { db } from "@workspace/db";
 import { subscriptionsTable, categoriesTable, subscriptionSharesTable } from "@workspace/db";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
+import { userSettingsTable } from "@workspace/db";
+import { getOrFetchRates } from "../lib/fx-cache";
+import { roundMoney } from "../lib/currency";
+import { convertAmount } from "@workspace/currencies/convert";
 import { calcEquivalents, daysUntil } from "../lib/billing";
 import type { BillingCycle } from "../lib/billing";
 
@@ -37,10 +41,15 @@ router.get("/summary", requireAuth, async (req, res) => {
       .from(subscriptionsTable)
       .where(eq(subscriptionsTable.clerkId, userId));
 
+    // Get user's default currency
+    const settingsRow = await db.query.userSettingsTable.findFirst({ where: eq(userSettingsTable.clerkId, userId) });
+    const defaultCurrency = settingsRow?.currency || "USD";
+
     const activeSubs = allSubs.filter(s => !s.isArchived && s.isActive);
     const archivedSubs = allSubs.filter(s => s.isArchived);
 
-    let monthlySpend = 0;
+    // Collect monthly amounts with their currencies for conversion
+    const monthlyItems: Array<{ amount: number; currency: string }> = [];
     let nextRenewalDays: number | null = null;
     let upcomingCount = 0;
 
@@ -49,13 +58,14 @@ router.get("/summary", requireAuth, async (req, res) => {
       if (sub.subscriptionType === "lifetime" || sub.subscriptionType === "trial") continue;
       // For shared subscriptions, use userShareAmount instead of full price
       let effectivePrice = parseFloat(sub.price);
+      let subCurrency = sub.currency || "USD";
       if (sub.isShared) {
         const shares = await db.select().from(subscriptionSharesTable).where(eq(subscriptionSharesTable.subscriptionId, sub.id));
         const userShare = shares.find(s => s.isCurrentUser);
         if (userShare) effectivePrice = parseFloat(userShare.amount);
       }
       const { monthlyEquivalent } = calcEquivalents(effectivePrice, sub.billingCycle as BillingCycle);
-      monthlySpend += monthlyEquivalent;
+      monthlyItems.push({ amount: monthlyEquivalent, currency: subCurrency });
 
       const days = sub.renewalDate ? daysUntil(sub.renewalDate) : null;
       if (days !== null && days >= 0 && days <= 7) upcomingCount++;
@@ -64,13 +74,39 @@ router.get("/summary", requireAuth, async (req, res) => {
       }
     }
 
+    // Convert all monthly amounts to default currency
+    let monthlySpend = 0;
+    let conversionAvailable = true;
+    if (monthlyItems.length > 0) {
+      const allSame = monthlyItems.every(i => i.currency === defaultCurrency);
+      if (allSame) {
+        monthlySpend = monthlyItems.reduce((sum, i) => sum + i.amount, 0);
+      } else {
+        const rates = await getOrFetchRates(db);
+        if (rates) {
+          for (const item of monthlyItems) {
+            
+            const converted = convertAmount(item.amount, item.currency, defaultCurrency, rates);
+            if (converted === null) { conversionAvailable = false; }
+            else { monthlySpend += converted; }
+          }
+        } else {
+          conversionAvailable = false;
+          // Fallback: sum raw values
+          monthlySpend = monthlyItems.reduce((sum, i) => sum + i.amount, 0);
+        }
+      }
+    }
+
     res.json({
       totalActiveSubscriptions: activeSubs.length,
       totalArchivedSubscriptions: archivedSubs.length,
-      monthlySpend: Math.round(monthlySpend * 100) / 100,
-      yearlySpend: Math.round(monthlySpend * 12 * 100) / 100,
+      monthlySpend: roundMoney(monthlySpend),
+      yearlySpend: roundMoney(monthlySpend * 12),
       upcomingRenewalsCount: upcomingCount,
       nextRenewalDays,
+      defaultCurrency,
+      conversionAvailable,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get dashboard summary");
