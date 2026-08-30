@@ -111,6 +111,7 @@ The product is **Traqqy**. The wordmark is a hand-drawn red Traqqy text. The sym
 - @workspace/api-client-react - Generated React Query hooks from API spec
 - @workspace/api-zod - Zod validation schemas
 - @workspace/api-spec - API specification
+- @workspace/currencies - Canonical 15-currency list, formatting, conversion utility
 
 ### Package Manager
 - **pnpm** (enforced via preinstall script)
@@ -142,6 +143,7 @@ Traqqy/
   lib/
     db/                # Drizzle schema + connection
       src/schema/      # Table definitions
+    currencies/        # Canonical currency list, conversion, formatting
     catalog/           # Subscription service catalog
     api-client-react/  # Generated React Query hooks
     api-spec/          # API specification
@@ -238,6 +240,12 @@ Traqqy/
 - Execution: status (pending|processing|sent|failed|cancelled), sentAt, error
 - Unique index on (subscriptionId, daysBefore) to prevent duplicates
 
+**fx_rates** - Daily exchange rate cache
+- id, base_currency, target_currency, rate (numeric 16,8), rate_date, created_at
+- UNIQUE constraint on (base_currency, target_currency, rate_date)
+- Populated once daily from Frankfurter API (base=USD)
+- Designed for future historical rate storage
+
 **gmail_connections** - Gmail OAuth connections (auto-import)
 **auto_import_scans** - Auto-import scan records
 **auto_import_candidates** - Detected subscription candidates from Gmail
@@ -281,7 +289,7 @@ Traqqy/
 - Three types: Recurring, Free Trial, Lifetime
 - Type-specific form fields (conditional UI)
 - 520+ service catalog with 62+ logos (via Simple Icons)
-- 62 supported currencies
+- 15 supported currencies with real-time exchange rates
 - Categories with color coding
 - Multiple billing cycles (weekly, monthly, quarterly, semi-annual, yearly)
 - Monthly equivalent calculation
@@ -338,6 +346,32 @@ Traqqy/
 - Edit form loads existing sharing state and people
 - Dashboard uses user share amount (not full price) for totals
 - Defensive isShared=true enforcement in POST/PATCH after share creation
+
+### Multi-Currency Conversion - COMPLETE
+- 15 canonical currencies defined in `@workspace/currencies` shared package
+- Single source of truth: INR, USD, EUR, GBP, CAD, AUD, JPY, CNY, SGD, TRY, CHF, NZD, KRW, HKD, PLN
+- Frontend (Settings, Add/Edit Subscription, SubscriptionRow) all consume the same canonical list
+- Server-side currency conversion using Frankfurter API (ECB data, free, no API key)
+- USD-pivot strategy: one daily Frankfurter API call fetches all 14 target rates
+- Exchange rates cached in `fx_rates` database table (Neon/Postgres)
+- Daily refresh: checks DB for today's rates, fetches only if missing
+- In-memory lock prevents concurrent Frankfurter requests during cache miss
+- Stale rate fallback: uses most recent cached rates when API fails
+- Central `convertAmount(amount, from, to, usdRates)` utility in `@workspace/currencies/convert`
+- Conversion applied AFTER billing-cycle normalization (monthly equivalent calculated first)
+- All aggregate API routes convert to user's Default Currency before responding:
+  - `/api/dashboard/summary` — monthlySpend, yearlySpend
+  - `/api/analytics/overview` — totalAnnualSpend, averageMonthlySpend, highestExpense
+  - `/api/analytics/monthly-trend` — totalAmount per month
+  - `/api/analytics/spending-by-category` — monthlyAmount per category
+  - `/api/wallet-health` — monthlySpend, yearlySpend, costIn30Days, averagePerSubscription
+- API responses include `defaultCurrency` and `conversionAvailable` fields
+- Frontend reads server-provided `defaultCurrency` (not client-side settings) for formatting
+- Individual subscriptions always display in their original billing currency
+- `conversionAvailable` flag indicates whether conversion was successful
+- Graceful degradation: missing rates return null, raw values summed as fallback
+- `fx_rates` table schema: (base_currency, target_currency, rate_date) UNIQUE constraint
+- 25 unit tests for conversion (156 total tests)
 
 ### Reminders - BACKEND COMPLETE (cron NOT configured)
 - CRUD API for reminder management
@@ -424,6 +458,27 @@ Traqqy/
 - **Files:** artifacts/api-server/src/routes/settings.ts
 - **Adversarial audit findings:** Deletion order is correct (subscriptions before categories avoids FK conflict), all queries are properly scoped to the authenticated user's clerkId, FK cascades handle subscription_shares/reminders/user_settings/auto_import_candidates, transaction wraps all deletes for atomic rollback
 - **Lesson:** When using Drizzle ORM, verify that column references in WHERE clauses use the correct table — `eq(Table.column, value)` compiles to `table.column` in SQL, so using the wrong table will reference a non-existent column in the target table's DELETE statement
+
+### Analytics Monthly-Trend Chart Showing Zero Values
+- **Problem:** Spending trend chart in Analytics showed a flat line at $0 for all 12 months despite active subscriptions
+- **Root cause:** The monthly-trend route filtered subscriptions by `createdAt <= monthStart`, but `createdAt` is when the user added the subscription to Traqqy, not when the subscription started. All subscriptions were added recently, so every month got `totalAmount: 0`
+- **Fix:** Removed the `createdAt <= monthStart` filter. All active non-archived subscriptions now count toward all months (same portfolio across all months)
+- **Files:** artifacts/api-server/src/routes/analytics.ts
+- **Lesson:** `createdAt` is an application event (when the record was created in Traqqy), not a business event (when the subscription started). Filtering by it for historical financial data produces incorrect results
+
+### Dashboard and Analytics Showing Wrong Currency
+- **Problem:** Dashboard showed amounts in INR, Analytics showed EUR — inconsistent despite user having a Default Currency set
+- **Root cause:** Frontend pages hardcoded `formatCurrency(amount, "INR")` or used `useGetSettings()` independently. No centralized currency conversion existed — aggregate calculations summed raw numeric amounts from different currencies without conversion
+- **Fix:** Added `useGetSettings()` to Dashboard and Health to use the user's configured currency. This was a presentation-only fix (formatting), not a conversion fix. The full conversion fix came in Session 5
+- **Files:** artifacts/subtrack/src/pages/Dashboard.tsx, artifacts/subtrack/src/pages/Analytics.tsx, artifacts/subtrack/src/pages/Health.tsx
+- **Lesson:** When multiple currencies exist in the system, formatting alone is insufficient — actual conversion is needed for correct aggregates
+
+### Subscription Rows Not Tappable on Mobile
+- **Problem:** On mobile, there was no way to open the edit dialog for a subscription. The three-dot menu was hidden (opacity-0 until hover) and rows were not clickable
+- **Root cause:** SubscriptionRow had no click handler; the three-dot dropdown trigger used `opacity-0 group-hover:opacity-100` which required hover — unavailable on touch devices
+- **Fix:** Added `onRowClick` prop to SubscriptionRow with `onClick`/`onKeyDown` (Enter/Space), `tabIndex={0}`, and `aria-label`. Changed three-dot button from `opacity-0 group-hover:opacity-100` to `opacity-100 sm:opacity-0 sm:group-hover:opacity-100` (always visible on mobile). Added `stopPropagation` on the actions container div to prevent row click when menu button is clicked
+- **Files:** artifacts/subtrack/src/components/subscriptions/SubscriptionRow.tsx, artifacts/subtrack/src/pages/Subscriptions.tsx
+- **Lesson:** Mobile-first design requires considering touch interactions, not just hover. Event isolation (stopPropagation) is needed when nesting interactive elements
 
 ---
 
@@ -522,6 +577,9 @@ Traqqy/
 - Cron service configuration for reminders
 - Gmail auto-import completion
 - Historical spending data collection for genuine stability measurement
+- Historical exchange rates for analytics (currently uses latest rates for all months)
+- Frankfurter only supports 29 currencies — 33 of the original 62 are unsupported for conversion
+- Production cron/scheduling for reminders
 - PWA support
 - Import/export functionality
 - Domain purchase and custom email domain for Resend
@@ -532,16 +590,17 @@ Traqqy/
 
 ### What Works
 Full subscription lifecycle (CRUD, archive/restore, type changes)
-Dashboard with real-time spending data
-Analytics with charts
+Dashboard with real-time spending data and multi-currency conversion
+Analytics with charts and multi-currency conversion
 Calendar with renewal events
-Wallet Health scoring with personalized factors
+Wallet Health scoring with personalized factors and multi-currency conversion
 Cost Sharing with equal and custom splits
 Reminder backend (API + processing endpoint)
 Authentication (Clerk)
 Dark/light theme
 520+ service catalog with logos
-62 currencies
+15 canonical currencies with server-side Frankfurter/ECB exchange-rate conversion
+Mobile subscription management (tappable rows, visible three-dot menu)
 Responsive design (desktop + mobile pill-bar navigation)
 Premium README with current screenshots
 Finalized Traqqy branding (wordmark + symbol)
@@ -623,6 +682,9 @@ The frontend package retains its original SubTrack name from before the product 
 | ~Aug 28 | Reminder system backend completed |
 | Aug 30 | Engineering history document created |
 | Aug 30 | Account deletion bug fixed (wrong table reference in category deletion) |
+| Aug 31 | Session 4: Analytics chart fix, mobile subscription interaction, currency formatting |
+| Aug 31 | Session 5: Multi-currency system with Frankfurter/ECB rates, 15 canonical currencies, server-side conversion, CurrencySelect fix, wallet-health audit fixes |
+| Aug 31 | Session 5 committed (84eb026): 26 files, 1142 insertions, 242 deletions |
 
 ---
 
@@ -649,3 +711,10 @@ The frontend package retains its original SubTrack name from before the product 
 | lib/db/src/schema/userSettings.ts | User settings |
 | lib/catalog/src/catalog-data.ts | 520+ service definitions |
 | lib/catalog/src/index.ts | Catalog exports, logo resolution |
+| lib/currencies/src/index.ts | Canonical 15-currency list, formatAmount, getCurrency |
+| lib/currencies/src/convert.ts | Central convertAmount (USD-pivot), roundMoney |
+| lib/db/src/schema/fxRates.ts | fx_rates table (base_currency, target_currency, rate, rate_date) |
+| artifacts/api-server/src/lib/fx-rates.ts | Frankfurter API client |
+| artifacts/api-server/src/lib/fx-cache.ts | Daily rate caching with in-memory lock |
+| artifacts/api-server/src/lib/currency.ts | Server-side conversion helpers (sumConverted, roundMoney) |
+| artifacts/subtrack/src/data/currencies.ts | Re-exports from @workspace/currencies (backward compat) |
