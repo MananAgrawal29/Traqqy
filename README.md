@@ -1,329 +1,164 @@
-<div align="center">
+# Traqqy
 
-<img src="artifacts/subtrack/public/traqqy-wordmark.png" alt="Traqqy" width="280">
+> **Finally, a subscription tracker that isn't another subscription.**
 
-<br>
-<br>
+Traqqy is a simple, privacy-focused subscription tracker designed to help you keep track of recurring payments, renewal dates, spending, reminders, and shared subscriptions — without connecting your bank account or email.
 
-### Subscriptions. Sorted.
+The goal is simple:
 
-Track every recurring payment in one place.
-No bank connections. No email scanning. No surveillance.
-
-<br>
-
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/MananAgrawal29/Traqqy)
-
-</div>
-
-<br>
-
-<div align="center">
-  <img src="docs/images/dashboard-dark.png" alt="Traqqy Dashboard" width="90%">
-</div>
-
-<br>
+**Know what you're paying for. Know when it's renewing. Stop paying for things you don't need.**
 
 ---
 
-<br>
+## ✨ Features
 
-<table>
-<tr>
-<td width="50%" valign="top">
+### 📊 Dashboard
 
-### Track
+Get a quick overview of your subscriptions and recurring expenses.
 
-Manage all recurring payments in one place.
+- Total subscription spending
+- Upcoming renewals
+- Active subscriptions
+- Spending breakdown
+- Recent activity
+- Multiple currencies
 
-Recurring, trial, and lifetime subscriptions — each handled the way it should be. Organize by category, set billing cycles, and track across multiple currencies.
-
-- 520+ recognized services
-- Recurring, trial, and lifetime types
-- Multiple billing cycles
-- 62 currencies
-
-</td>
-<td width="50%" valign="middle" align="center">
-  <img src="docs/images/subscriptions-dark.png" alt="Subscription management" width="95%">
-</td>
-</tr>
-</table>
-
-<br>
-
-<table>
-<tr>
-<td width="50%" valign="middle" align="center">
-  <img src="docs/images/analytics-dark.png" alt="Analytics" width="95%">
-</td>
-<td width="50%" valign="top">
-
-### Understand
-
-See where your money goes and how your spending changes.
-
-Spending analytics with category breakdown, trends over time, and a Wallet Health score built entirely from your own data. Every factor explained. Every recommendation actionable.
-
-- Spending analytics with category breakdown
-- Wallet Health scoring (0–100)
-- Personalized recommendations
-- No external APIs or AI scoring
-
-</td>
-</tr>
-</table>
-
-<br>
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### Share
-
-Track shared subscriptions and understand who pays what.
-
-Split costs equally or set custom amounts. See your personal share clearly — never the full subscription price when it isn't yours alone.
-
-- Equal and custom cost splitting
-- Per-person share tracking
-- Your share, clearly visible
-
-</td>
-<td width="50%" valign="middle" align="center">
-  <img src="docs/images/subscriptions-dark.png" alt="Cost sharing" width="95%">
-</td>
-</tr>
-</table>
-
-<br>
-
-<div align="center">
-
-### Know exactly when renewals are coming.
-
-</div>
-
-<br>
-
-<div align="center">
-  <img src="docs/images/calendar-dark.png" alt="Calendar" width="70%">
-</div>
-
-<br>
+![Traqqy Dashboard](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122431.png)
 
 ---
 
-<br>
+### 🔄 Subscription Management
 
-<div align="center">
+Keep all your subscriptions in one place.
 
-## Your data stays yours.
+- Add and edit subscriptions
+- Custom billing cycles
+- Monthly and yearly subscriptions
+- Trial subscriptions
+- Lifetime purchases
+- Subscription logos
+- Personal or shared subscriptions
+- Multiple currencies
+- Renewal date tracking
 
-Traqqy works entirely from what you enter.
-No invasive permissions. No hidden tracking.
-
-<br>
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-**No bank access**
-
-We never connect to your bank or read balances.
-
-</td>
-<td align="center" width="33%">
-
-**No email scanning**
-
-Your inbox stays private and untouched.
-
-</td>
-<td align="center" width="33%">
-
-**No SMS reading**
-
-We don't read your messages. Ever.
-
-</td>
-</tr>
-</table>
-
-</div>
-
-<br>
+![Traqqy Subscriptions](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122453.png)
 
 ---
 
-<br>
+### 🔍 Powerful Filtering
 
-<div align="center">
+Quickly find the subscription you're looking for.
 
-<table>
-<tr>
-<td align="center" width="25%">
+Filter and organize your subscriptions based on their:
 
-**Trial & Lifetime**
+- Status
+- Billing cycle
+- Category
+- Payment type
+- Other available attributes
 
-Track free trials and one-time purchases alongside recurring subscriptions.
-
-</td>
-<td align="center" width="25%">
-
-**62 Currencies**
-
-INR, USD, EUR, GBP, JPY, and dozens more — each formatted correctly.
-
-</td>
-<td align="center" width="25%">
-
-**Wallet Health**
-
-Your subscription wallet gets a personalized health score with explainable factors.
-
-</td>
-<td align="center" width="25%">
-
-**Dark & Light**
-
-Switch between themes. Your preference is remembered.
-
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-
-**Cost Sharing**
-
-Split shared subscriptions equally or with custom amounts per person.
-
-</td>
-<td align="center" width="25%">
-
-**520+ Services**
-
-Recognized services with proper logos, from Netflix to Railway to Claude.
-
-</td>
-<td align="center" width="25%">
-
-**Renewal Calendar**
-
-See every upcoming renewal on a visual calendar with event counts.
-
-</td>
-<td align="center" width="25%">
-
-**Categories**
-
-Organize subscriptions by category and see where your money goes.
-
-</td>
-</tr>
-</table>
-
-</div>
-
-<br>
+![Traqqy Filters](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122628.png)
 
 ---
 
-<br>
+### 🔔 Reminders
 
-<div align="center">
+Never forget an upcoming renewal.
 
-### Tech Stack
+Traqqy lets you configure reminders for subscriptions so you're aware before you're charged.
 
-<br>
-
-**Frontend**
-React · TypeScript · Vite · Tailwind CSS · shadcn/ui · TanStack Query · Wouter
-
-<br>
-
-**Backend**
-Node.js · Express · PostgreSQL · Drizzle ORM
-
-<br>
-
-**Auth**
-Clerk
-
-</div>
-
-<br>
+![Traqqy Reminders](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122639.png)
 
 ---
 
-<br>
+### 📅 Calendar
 
-<div align="center">
+See your subscription renewals visually across the month.
 
-### Getting Started
+The calendar makes it easier to understand when multiple subscriptions are going to charge you.
 
-</div>
-
-```bash
-# Clone
-git clone https://github.com/MananAgrawal29/Traqqy.git
-cd Traqqy
-
-# Install
-pnpm install
-
-# Environment setup
-# Frontend: artifacts/subtrack/.env.local
-# Backend:  artifacts/api-server/.env
-
-# Run
-pnpm dev
-```
-
-<br>
+![Traqqy Calendar](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122651.png)
 
 ---
 
-<br>
+### 📈 Analytics
 
-<div align="center">
+Understand where your recurring money is going.
 
-### Roadmap
+Track spending through visual breakdowns and analytics instead of just looking at a list of subscriptions.
 
-<br>
-
-| Status | Milestone |
-|--------|-----------|
-| ✅ | Subscription tracking (recurring, trial, lifetime) |
-| ✅ | Dashboard, Analytics, Calendar |
-| ✅ | Wallet Health scoring |
-| ✅ | Cost sharing (equal & custom) |
-| ✅ | 520+ service catalog with logos |
-| ✅ | Dark & light mode |
-| 🔧 | Reminders delivery (production cron) |
-| 🔧 | Production deployment |
-| 💡 | PWA support |
-| 💡 | Import & export |
-
-</div>
-
-<br>
+![Traqqy Analytics](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122700.png)
 
 ---
 
-<br>
+### 👤 Profile & Account
 
-<div align="center">
+View your account information and subscription-related statistics in one place.
 
-<img src="artifacts/subtrack/public/traqqy-symbol.png" alt="Traqqy" width="48">
+![Traqqy Profile](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122716.png)
 
-<br>
-<br>
+---
 
-**Built with love by Manan Agrawal**
+### ⚙️ Settings
 
-Traqqy — Subscriptions. Sorted.
+Manage your account and application preferences from a dedicated settings page.
 
-</div>
+![Traqqy Settings](./Traqqy_Readme_Screenshots/Screenshot%202026-08-28%20122738.png)
+
+---
+
+## 🧠 Why Traqqy?
+
+Subscriptions are convenient.
+
+But over time, they become easy to forget.
+
+A few small monthly payments can quietly turn into a significant yearly expense.
+
+Traqqy is built around one idea:
+
+> **Make recurring spending visible.**
+
+Instead of connecting your bank account, forwarding emails, or giving an external service access to your financial data, Traqqy focuses on giving you a simple place to manually keep track of what you actually pay for.
+
+---
+
+## 🔐 Privacy First
+
+Traqqy is intentionally designed around manual subscription tracking.
+
+There is **no requirement to connect:**
+
+- Bank accounts
+- Credit/debit cards
+- Email inboxes
+- SMS messages
+
+You decide what information goes into Traqqy.
+
+---
+
+## 💰 Built to Stay Affordable
+
+Traqqy itself isn't supposed to become another subscription you have to worry about.
+
+The project is designed with low infrastructure costs and a lightweight architecture in mind.
+
+---
+
+## 🛠️ Tech Stack
+
+Traqqy is built using modern web technologies.
+
+| Technology | Purpose |
+|---|---|
+| React | Frontend UI |
+| TypeScript | Type safety |
+| Vite | Frontend tooling |
+| Clerk | Authentication |
+| PostgreSQL | Database |
+| Drizzle ORM | Database ORM |
+| Node.js | Backend runtime |
+| pnpm | Package management |
+
+---
