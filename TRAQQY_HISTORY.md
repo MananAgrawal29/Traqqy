@@ -417,6 +417,14 @@ Traqqy/
 - **Resolution:** Screenshots must be captured manually from the authenticated session
 - **Lesson:** Cross-browser session sharing requires shared browser context, not just cookies
 
+### Account Deletion Using Wrong Table Reference
+- **Problem:** `DELETE /api/settings/account` used `eq(subscriptionsTable.clerkId, userId)` when deleting categories instead of `eq(categoriesTable.clerkId, userId)`
+- **Root cause:** Copy-paste error — the wrong table reference was used in the WHERE clause. With Drizzle ORM, this compiles to `subscriptions.clerk_id = $1` in a `DELETE FROM categories` statement, which is a SQL column resolution error
+- **Fix:** Changed to `eq(categoriesTable.clerkId, userId)` so only user-created categories (clerkId non-null) are deleted, preserving system/default categories (clerkId null)
+- **Files:** artifacts/api-server/src/routes/settings.ts
+- **Adversarial audit findings:** Deletion order is correct (subscriptions before categories avoids FK conflict), all queries are properly scoped to the authenticated user's clerkId, FK cascades handle subscription_shares/reminders/user_settings/auto_import_candidates, transaction wraps all deletes for atomic rollback
+- **Lesson:** When using Drizzle ORM, verify that column references in WHERE clauses use the correct table — `eq(Table.column, value)` compiles to `table.column` in SQL, so using the wrong table will reference a non-existent column in the target table's DELETE statement
+
 ---
 
 ## 9. Important Edge Cases
@@ -545,7 +553,7 @@ Production deployment
 Spending stability measurement (needs historical data)
 
 ### What Is Broken
-Nothing currently broken based on latest audit
+Nothing currently broken (account deletion bug fixed Aug 30)
 
 ### What Was Last Being Worked On
 README redesign with new screenshots from user-provided attachments
@@ -614,6 +622,7 @@ The frontend package retains its original SubTrack name from before the product 
 | ~Aug 28 | README redesigned as product page |
 | ~Aug 28 | Reminder system backend completed |
 | Aug 30 | Engineering history document created |
+| Aug 30 | Account deletion bug fixed (wrong table reference in category deletion) |
 
 ---
 
