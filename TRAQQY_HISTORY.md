@@ -384,6 +384,15 @@ Traqqy/
 - Error handling (failed deliveries tracked)
 - 53+ tests passing
 
+### Edge-Case + Security Pass - COMPLETE
+- Server-side subscription price validation: blocks NaN, negative, and Infinity values on POST and PATCH
+- Server-side currency validation: rejects arbitrary currency codes, accepts only the canonical 15 supported currencies
+- wallet-health FX rate optimization: rates fetched once per request instead of 3 independent calls
+- Full authorization audit: all 11 API routes verified for requireAuth, userId scoping, and ownership enforcement
+- Full security audit: no XSS/injection vectors, no hardcoded secrets, no raw SQL, no IDOR vulnerabilities
+- Auto-import OAuth HMAC intentionally deferred (not production-ready)
+- 156/156 tests passing
+
 ### Responsive / Mobile Pass - COMPLETE
 - Reminders delete button visible on mobile (opacity-100 sm:opacity-0 sm:group-hover:opacity-100)
 - Calendar day-cell height reduced on mobile (min-h-[60px] sm:min-h-[80px])
@@ -496,6 +505,20 @@ Traqqy/
 - **Files:** artifacts/subtrack/src/pages/Reminders.tsx
 - **Lesson:** When applying a responsive fix to one component, check for identical patterns in other components
 
+### Subscription Price/Currency Not Validated Server-Side
+- **Problem:** POST and PATCH subscription routes accepted NaN, negative, Infinity prices and arbitrary currency codes without validation. A client could store invalid monetary values that corrupt aggregate calculations (NaN propagates through calcEquivalents and convertAmount)
+- **Root cause:** Price validation only checked `price === undefined`, not whether the parsed value was numeric, non-negative, or finite. Currency was not validated against the supported list.
+- **Fix:** Added parseFloat + isNaN + negative + finite check on both POST and PATCH. Added SUPPORTED_CURRENCY_CODES.includes() validation on both POST and PATCH.
+- **Files:** artifacts/api-server/src/routes/subscriptions.ts
+- **Lesson:** Frontend validation is not security. Server-side validation must independently verify numeric constraints and allowed enumerations for all monetary fields.
+
+### wallet-health FX Rate Redundant Fetching
+- **Problem:** getOrFetchRates(db) was called independently 3 times during one wallet-health request (for monthly conversion, costIn30/costIn7, and nonPriority spending). While the in-memory lock prevented duplicate Frankfurter API calls, each call still queried the DB separately.
+- **Root cause:** Each conversion block independently fetched rates rather than sharing a single result.
+- **Fix:** Rates are now fetched once at the top of the conversion block and reused throughout.
+- **Files:** artifacts/api-server/src/routes/wallet-health.ts
+- **Lesson:** When a shared resource is needed multiple times in a single request, fetch it once and pass it through rather than re-fetching.
+
 ---
 
 ## 9. Important Edge Cases
@@ -561,6 +584,20 @@ Traqqy/
 3. **Validate before mutation** - not after, to prevent orphaned records
 4. **Edit forms need full feature parity** - what works in Create must work in Edit
 5. **Manual data trackers have different semantics** - past dates do not equal missed payments
+6. **Frontend validation is not security** - server must independently validate numeric constraints and allowed enumerations (Session 7)
+
+### Edge-Case + Security Audit (Session 7)
+- Comprehensive codebase-wide security and edge-case audit
+- Fixed subscription price/currency validation gap (NaN, negative, Infinity prices; arbitrary currency codes)
+- Fixed wallet-health redundant FX rate fetching (3 calls → 1)
+- Verified all 11 API routes for requireAuth, userId scoping, and ownership enforcement
+- Verified no XSS/injection vectors, no hardcoded secrets, no raw SQL, no IDOR
+- Verified currency system integrity (15 canonical currencies, single source of truth, no regressions)
+- Verified FX cache locking, stale-rate fallback, and conversion correctness
+- Verified billing-cycle normalization, same-currency conversion, and missing-rate graceful degradation
+- Verified frontend empty/loading/null states
+- Auto-import OAuth HMAC deferred as known future task (feature not production-ready)
+- Commit: 9fcbd18
 
 ---
 
@@ -599,6 +636,7 @@ Traqqy/
 - PWA support
 - Import/export functionality
 - Domain purchase and custom email domain for Resend
+- Auto-import OAuth state token should use proper HMAC (crypto.createHmac) instead of base64 encoding — deferred until feature is production-ready
 
 ---
 
@@ -632,7 +670,7 @@ Spending stability measurement (needs historical data)
 Nothing currently broken (account deletion bug fixed Aug 30)
 
 ### What Was Last Being Worked On
-Session 6: Responsive / Mobile Pass — fixed mobile responsive issues across Calendar, Settings, Dashboard, and Reminders
+Session 7: Edge-Case + Security Pass — subscription price/currency validation, wallet-health FX optimization, full authorization/security audit
 
 ### What Should Be Tackled Next
 1. Production deployment setup
@@ -702,6 +740,7 @@ The frontend package retains its original SubTrack name from before the product 
 | Aug 31 | Session 5: Multi-currency system with Frankfurter/ECB rates, 15 canonical currencies, server-side conversion, CurrencySelect fix, wallet-health audit fixes |
 | Aug 31 | Session 5 committed (84eb026): 26 files, 1142 insertions, 242 deletions |
 | Aug 31 | Session 6: Responsive / Mobile Pass — Calendar cell height, Settings tabs overflow, Dashboard category bars, Reminders delete button (212ade4) |
+| Aug 31 | Session 7: Edge-Case + Security Pass — subscription price/currency validation, wallet-health FX optimization, full authorization/security audit; OAuth HMAC intentionally deferred (9fcbd18) |
 
 ---
 
