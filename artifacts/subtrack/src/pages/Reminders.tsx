@@ -249,7 +249,7 @@ export default function Reminders() {
                         }
                       />
                       <button
-                        className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive hover:bg-destructive/10"
+                        className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDelete(rem.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

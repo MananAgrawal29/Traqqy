@@ -97,7 +97,7 @@ export default function CalendarPage() {
                 const isDayToday = isToday(day);
 
                 return (
-                  <div key={i} className={`min-h-[80px] border-b border-r border-border/30 p-2 transition-colors ${!isCurrentMonth ? "bg-muted/5 text-muted-foreground/30" : "bg-background hover:bg-muted/5"} ${(i + 1) % 7 === 0 ? "border-r-0" : ""}`}>
+                  <div key={i} className={`min-h-[60px] sm:min-h-[80px] border-b border-r border-border/30 p-2 transition-colors ${!isCurrentMonth ? "bg-muted/5 text-muted-foreground/30" : "bg-background hover:bg-muted/5"} ${(i + 1) % 7 === 0 ? "border-r-0" : ""}`}>
                     <div className="flex justify-between items-start mb-1">
                       <span className={`text-xs font-medium h-6 w-6 flex items-center justify-center rounded-full ${isDayToday ? "bg-primary text-primary-foreground" : ""}`}>
                         {format(day, "d")}

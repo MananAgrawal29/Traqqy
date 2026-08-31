@@ -222,14 +222,14 @@ export default function Dashboard() {
                     }}
                   >
                     <div className="flex items-center justify-between text-sm mb-1.5">
-                      <span className="font-medium flex items-center gap-2.5">
+                      <span className="font-medium flex items-center gap-2.5 min-w-0">
                         <span
                           className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: cat.color || "#ccc" }}
                         />
-                        {cat.categoryName}
+                        <span className="truncate">{cat.categoryName}</span>
                       </span>
-                      <span className="font-mono text-muted-foreground">
+                      <span className="font-mono text-muted-foreground shrink-0">
                         {formatCurrency(cat.monthlyAmount, currency)}
                       </span>
                     </div>
