@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { subscriptionsTable, categoriesTable, subscriptionSharesTable } from "@workspace/db";
 import { eq, and, ilike, gte, lte, or, asc, desc } from "drizzle-orm";
 import { requireAuth, getUserId } from "../lib/auth";
+import { SUPPORTED_CURRENCY_CODES } from "@workspace/currencies";
 import { calcEquivalents, daysUntil } from "../lib/billing";
 import type { BillingCycle } from "../lib/billing";
 
@@ -100,6 +101,15 @@ router.post("/", requireAuth, async (req, res) => {
   // Type-specific validation
   if (!name || price === undefined) {
     res.status(400).json({ error: "name and price are required" });
+    return;
+  }
+  const priceNum = parseFloat(price);
+  if (isNaN(priceNum) || priceNum < 0 || !isFinite(priceNum)) {
+    res.status(400).json({ error: "price must be a valid non-negative number" });
+    return;
+  }
+  if (currency && !SUPPORTED_CURRENCY_CODES.includes(currency)) {
+    res.status(400).json({ error: "Unsupported currency: " + currency });
     return;
   }
   const subType = subscriptionType || "recurring";
@@ -212,8 +222,21 @@ router.patch("/:id", requireAuth, async (req, res) => {
     if (name !== undefined)          updates.name = name;
     if (icon !== undefined)          updates.icon = icon;
     if (categoryId !== undefined)    updates.categoryId = categoryId;
-    if (price !== undefined)         updates.price = price.toString();
-    if (currency !== undefined)      updates.currency = currency;
+    if (price !== undefined) {
+      const p = parseFloat(price);
+      if (isNaN(p) || p < 0 || !isFinite(p)) {
+        res.status(400).json({ error: "price must be a valid non-negative number" });
+        return;
+      }
+      updates.price = price.toString();
+    }
+    if (currency !== undefined) {
+      if (!SUPPORTED_CURRENCY_CODES.includes(currency)) {
+        res.status(400).json({ error: "Unsupported currency: " + currency });
+        return;
+      }
+      updates.currency = currency;
+    }
     if (billingCycle !== undefined)  updates.billingCycle = billingCycle;
     if (paymentMethod !== undefined) updates.paymentMethod = paymentMethod;
     if (notes !== undefined)         updates.notes = notes;

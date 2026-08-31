@@ -60,8 +60,9 @@ router.get("/", requireAuth, async (req, res) => {
     let convertedMonthly = totalMonthly;
     let conversionAvailable = true;
     const defaultCurrency = userCurrency;
+    // Fetch rates once and reuse throughout the request
+    const rates = await getOrFetchRates(db);
     if (allSubItems.length > 0 && !allSubItems.every(i => i.currency === defaultCurrency)) {
-      const rates = await getOrFetchRates(db);
       if (rates) {
         convertedMonthly = 0;
         for (const item of allSubItems) {
@@ -81,7 +82,6 @@ router.get("/", requireAuth, async (req, res) => {
     
     let convertedCostIn30 = 0, convertedCostIn7 = 0;
     if (renewItems30.length > 0 && !renewItems30.every(i => i.currency === defaultCurrency)) {
-      const rates = await getOrFetchRates(db);
       if (rates) {
         for (const item of renewItems30) { const c = convertAmount(item.amount, item.currency, defaultCurrency, rates); convertedCostIn30 += c ?? item.amount; }
         for (const item of renewItems7) { const c = convertAmount(item.amount, item.currency, defaultCurrency, rates); convertedCostIn7 += c ?? item.amount; }
@@ -203,12 +203,11 @@ router.get("/", requireAuth, async (req, res) => {
     if (priorityCategories.length > 0 && active.length > 0) {
       const nonPri = active.filter(s => s.categoryName && !priorityCategories.includes(s.categoryName));
       const nonPriItems = nonPri.map(s => ({ amount: s.monthlyEquivalent, currency: s.currency || "USD" }));
-      const nonPriRates = nonPriItems.some(i => i.currency !== userCurrency) ? await getOrFetchRates(db) : null;
       let nonPriMonthly = 0;
       if (nonPriItems.length > 0) {
-        if (!nonPriItems.every(i => i.currency === userCurrency) && nonPriRates) {
+        if (!nonPriItems.every(i => i.currency === userCurrency) && rates) {
           for (const item of nonPriItems) {
-            const c = convertAmount(item.amount, item.currency, userCurrency, nonPriRates);
+            const c = convertAmount(item.amount, item.currency, userCurrency, rates);
             nonPriMonthly += c ?? item.amount;
           }
         } else {
