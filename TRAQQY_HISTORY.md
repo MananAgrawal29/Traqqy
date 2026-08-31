@@ -384,6 +384,15 @@ Traqqy/
 - Error handling (failed deliveries tracked)
 - 53+ tests passing
 
+### Responsive / Mobile Pass - COMPLETE
+- Reminders delete button visible on mobile (opacity-100 sm:opacity-0 sm:group-hover:opacity-100)
+- Calendar day-cell height reduced on mobile (min-h-[60px] sm:min-h-[80px])
+- Settings tabs horizontally scrollable on narrow screens (flex overflow-x-auto)
+- Dashboard category-bar text truncation for long names (min-w-0 + truncate, shrink-0 on amounts)
+- Calendar day labels evaluated at 320px — full names fit within columns, single-letter fallback intentionally not needed
+- No changes to currency/FX architecture, API, database, or subscription currency behavior
+- Note: Visual verification was limited because authenticated Preview access was unavailable (Clerk auth); fixes verified via code analysis and build/test
+
 ### Navigation - COMPLETE
 - Pill-bar segmented navigation (horizontal, top of app)
 - Desktop: sticky header with wordmark + pills + user dropdown
@@ -479,6 +488,13 @@ Traqqy/
 - **Fix:** Added `onRowClick` prop to SubscriptionRow with `onClick`/`onKeyDown` (Enter/Space), `tabIndex={0}`, and `aria-label`. Changed three-dot button from `opacity-0 group-hover:opacity-100` to `opacity-100 sm:opacity-0 sm:group-hover:opacity-100` (always visible on mobile). Added `stopPropagation` on the actions container div to prevent row click when menu button is clicked
 - **Files:** artifacts/subtrack/src/components/subscriptions/SubscriptionRow.tsx, artifacts/subtrack/src/pages/Subscriptions.tsx
 - **Lesson:** Mobile-first design requires considering touch interactions, not just hover. Event isolation (stopPropagation) is needed when nesting interactive elements
+
+### Reminders Delete Button Invisible on Mobile
+- **Problem:** On mobile, the Reminders page delete button was invisible because it used `opacity-0 group-hover:opacity-100` without the `sm:` prefix — the same pattern that was already fixed for SubscriptionRow in Session 4
+- **Root cause:** The Session 4 fix for SubscriptionRow was not applied to the analogous Reminders delete button
+- **Fix:** Changed to `opacity-100 sm:opacity-0 sm:group-hover:opacity-100` (matching the SubscriptionRow pattern)
+- **Files:** artifacts/subtrack/src/pages/Reminders.tsx
+- **Lesson:** When applying a responsive fix to one component, check for identical patterns in other components
 
 ---
 
@@ -602,6 +618,7 @@ Dark/light theme
 15 canonical currencies with server-side Frankfurter/ECB exchange-rate conversion
 Mobile subscription management (tappable rows, visible three-dot menu)
 Responsive design (desktop + mobile pill-bar navigation)
+Improved mobile responsiveness: Calendar cells, Settings tabs, Dashboard category bars, Reminders delete button
 Premium README with current screenshots
 Finalized Traqqy branding (wordmark + symbol)
 
@@ -615,8 +632,7 @@ Spending stability measurement (needs historical data)
 Nothing currently broken (account deletion bug fixed Aug 30)
 
 ### What Was Last Being Worked On
-README redesign with new screenshots from user-provided attachments
-The last user request was to create this engineering history file
+Session 6: Responsive / Mobile Pass — fixed mobile responsive issues across Calendar, Settings, Dashboard, and Reminders
 
 ### What Should Be Tackled Next
 1. Production deployment setup
@@ -685,6 +701,7 @@ The frontend package retains its original SubTrack name from before the product 
 | Aug 31 | Session 4: Analytics chart fix, mobile subscription interaction, currency formatting |
 | Aug 31 | Session 5: Multi-currency system with Frankfurter/ECB rates, 15 canonical currencies, server-side conversion, CurrencySelect fix, wallet-health audit fixes |
 | Aug 31 | Session 5 committed (84eb026): 26 files, 1142 insertions, 242 deletions |
+| Aug 31 | Session 6: Responsive / Mobile Pass — Calendar cell height, Settings tabs overflow, Dashboard category bars, Reminders delete button (212ade4) |
 
 ---
 
