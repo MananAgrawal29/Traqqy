@@ -5,6 +5,7 @@
     "tsBuildInfoFile": ".tsbuildinfo",
     "outDir": "dist",
     "rootDir": "src",
+    "lib": ["es2022", "dom", "dom.iterable"],
     "types": ["node"],
     "noEmitOnError": false,
     "esModuleInterop": true
