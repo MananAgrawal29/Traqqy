@@ -6,4 +6,4 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ override: true, path: path.resolve(__dirname, "..", ".env") });
 // Dynamic import ensures dotenv is loaded before index.ts and its dependencies
-await import("./index.js");
+await import("./server.js");
