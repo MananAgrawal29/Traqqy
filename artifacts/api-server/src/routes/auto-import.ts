@@ -8,11 +8,11 @@ import {
   categoriesTable,
 } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { requireAuth, getUserId } from "../lib/auth";
-import { getAuthUrl, exchangeCode, revokeToken } from "../lib/auto-import/gmail";
-import { runScan } from "../lib/auto-import/scan";
-import { calcEquivalents } from "../lib/billing";
-import type { BillingCycle } from "../lib/billing";
+import { requireAuth, getUserId } from "../lib/auth.js";
+import { getAuthUrl, exchangeCode, revokeToken } from "../lib/auto-import/gmail.js";
+import { runScan } from "../lib/auto-import/scan.js";
+import { calcEquivalents } from "../lib/billing.js";
+import type { BillingCycle } from "../lib/billing.js";
 
 const router = Router();
 

@@ -3,7 +3,7 @@
  */
 
 import { google, type gmail_v1 } from "googleapis";
-import { decryptToken, encryptToken } from "../encryption";
+import { decryptToken, encryptToken } from "../encryption.js";
 import { db } from "@workspace/db";
 import { gmailConnectionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";

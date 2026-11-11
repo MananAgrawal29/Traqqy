@@ -3,8 +3,8 @@
  * This uses rule-based scoring to avoid false positives.
  */
 
-import type { ExtractedEmail } from "./extract";
-import { NON_SUBSCRIPTION_MERCHANTS, ONE_TIME_KEYWORDS, SUBSCRIPTION_KEYWORDS, PLATFORM_NAMES } from "./payment-providers";
+import type { ExtractedEmail } from "./extract.js";
+import { NON_SUBSCRIPTION_MERCHANTS, ONE_TIME_KEYWORDS, SUBSCRIPTION_KEYWORDS, PLATFORM_NAMES } from "./payment-providers.js";
 
 export interface ClassificationResult {
   score: number;

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { categoriesTable, subscriptionsTable } from "@workspace/db";
 import { eq, and, or, isNull, count } from "drizzle-orm";
-import { requireAuth, getUserId } from "../lib/auth";
+import { requireAuth, getUserId } from "../lib/auth.js";
 
 const router = Router();
 

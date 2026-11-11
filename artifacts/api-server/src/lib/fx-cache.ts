@@ -13,7 +13,7 @@ import { type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq, and, desc } from "drizzle-orm";
 import { fxRatesTable } from "@workspace/db";
 import { SUPPORTED_CURRENCY_CODES } from "@workspace/currencies";
-import { fetchLatestRates } from "./fx-rates";
+import { fetchLatestRates } from "./fx-rates.js";
 
 const USD = "USD";
 

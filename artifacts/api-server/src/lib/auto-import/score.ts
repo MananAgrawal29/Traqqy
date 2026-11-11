@@ -2,10 +2,10 @@
  * Combine all detection signals into a final confidence score (0-100).
  */
 
-import type { ExtractedEmail } from "./extract";
-import type { ClassificationResult } from "./classify";
-import type { RecurrenceResult } from "./recurrence";
-import type { CatalogMatch } from "./catalog-match";
+import type { ExtractedEmail } from "./extract.js";
+import type { ClassificationResult } from "./classify.js";
+import type { RecurrenceResult } from "./recurrence.js";
+import type { CatalogMatch } from "./catalog-match.js";
 
 export interface ScoredCandidate {
   merchantName: string;

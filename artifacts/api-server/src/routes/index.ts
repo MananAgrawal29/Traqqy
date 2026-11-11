@@ -1,15 +1,15 @@
 import { Router } from "express";
-import healthRouter from "./health";
-import subscriptionsRouter from "./subscriptions";
-import categoriesRouter from "./categories";
-import remindersRouter from "./reminders";
-import dashboardRouter from "./dashboard";
-import analyticsRouter from "./analytics";
-import calendarRouter from "./calendar";
-import settingsRouter from "./settings";
-import autoImportRouter from "./auto-import";
-import walletHealthRouter from "./wallet-health";
-import { seedDefaultCategories } from "./categories";
+import healthRouter from "./health.js";
+import subscriptionsRouter from "./subscriptions.js";
+import categoriesRouter from "./categories.js";
+import remindersRouter from "./reminders.js";
+import dashboardRouter from "./dashboard.js";
+import analyticsRouter from "./analytics.js";
+import calendarRouter from "./calendar.js";
+import settingsRouter from "./settings.js";
+import autoImportRouter from "./auto-import.js";
+import walletHealthRouter from "./wallet-health.js";
+import { seedDefaultCategories } from "./categories.js";
 
 const router = Router();
 

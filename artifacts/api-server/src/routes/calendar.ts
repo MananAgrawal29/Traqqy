@@ -2,9 +2,9 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { subscriptionsTable, categoriesTable } from "@workspace/db";
 import { eq, and, gte, lte } from "drizzle-orm";
-import { requireAuth, getUserId } from "../lib/auth";
-import { calcEquivalents, daysUntil } from "../lib/billing";
-import type { BillingCycle } from "../lib/billing";
+import { requireAuth, getUserId } from "../lib/auth.js";
+import { calcEquivalents, daysUntil } from "../lib/billing.js";
+import type { BillingCycle } from "../lib/billing.js";
 
 const router = Router();
 

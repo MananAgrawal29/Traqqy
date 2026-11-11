@@ -2,9 +2,9 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { remindersTable, subscriptionsTable, userSettingsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { requireAuth, getUserId } from "../lib/auth";
-import { processDueReminders } from "../lib/scheduler";
-import { calculateScheduledSendAt } from "../lib/scheduling";
+import { requireAuth, getUserId } from "../lib/auth.js";
+import { processDueReminders } from "../lib/scheduler.js";
+import { calculateScheduledSendAt } from "../lib/scheduling.js";
 
 const router = Router();
 

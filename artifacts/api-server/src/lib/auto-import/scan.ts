@@ -9,13 +9,13 @@ import {
   subscriptionsTable,
 } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { getGmailClient, searchMessages, getMessageHeaders, buildSearchQueries } from "./gmail";
-import { extractEmailData, type ExtractedEmail } from "./extract";
-import { classifyEmail } from "./classify";
-import { detectRecurrence } from "./recurrence";
-import { matchCatalog } from "./catalog-match";
-import { scoreCandidate, type ScoredCandidate } from "./score";
-import { MARKETING_PLATFORMS, PLATFORM_NAMES, PAYMENT_PROVIDER_DOMAINS } from "./payment-providers";
+import { getGmailClient, searchMessages, getMessageHeaders, buildSearchQueries } from "./gmail.js";
+import { extractEmailData, type ExtractedEmail } from "./extract.js";
+import { classifyEmail } from "./classify.js";
+import { detectRecurrence } from "./recurrence.js";
+import { matchCatalog } from "./catalog-match.js";
+import { scoreCandidate, type ScoredCandidate } from "./score.js";
+import { MARKETING_PLATFORMS, PLATFORM_NAMES, PAYMENT_PROVIDER_DOMAINS } from "./payment-providers.js";
 
 /**
  * Run a full auto-import scan for a user.

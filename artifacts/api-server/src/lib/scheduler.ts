@@ -25,9 +25,9 @@
 import { db } from "@workspace/db";
 import { remindersTable, subscriptionsTable, userSettingsTable } from "@workspace/db";
 import { eq, and, lte, sql } from "drizzle-orm";
-import { sendReminderEmail } from "./mail";
-import { daysUntilRenewal } from "./scheduling";
-import { getClerkUserEmail } from "./clerk-user";
+import { sendReminderEmail } from "./mail.js";
+import { daysUntilRenewal } from "./scheduling.js";
+import { getClerkUserEmail } from "./clerk-user.js";
 
 /** How long before a "processing" record is considered stale (10 minutes). */
 const STALE_PROCESSING_MS = 10 * 60 * 1000;

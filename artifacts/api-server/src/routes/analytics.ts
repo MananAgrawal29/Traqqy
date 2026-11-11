@@ -2,12 +2,12 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { subscriptionsTable, categoriesTable, subscriptionSharesTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { requireAuth, getUserId } from "../lib/auth";
+import { requireAuth, getUserId } from "../lib/auth.js";
 import { userSettingsTable } from "@workspace/db";
-import { getOrFetchRates } from "../lib/fx-cache";
+import { getOrFetchRates } from "../lib/fx-cache.js";
 import { convertAmount, roundMoney } from "@workspace/currencies/convert";
-import { calcEquivalents } from "../lib/billing";
-import type { BillingCycle } from "../lib/billing";
+import { calcEquivalents } from "../lib/billing.js";
+import type { BillingCycle } from "../lib/billing.js";
 
 const router = Router();
 

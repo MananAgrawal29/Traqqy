@@ -1,4 +1,4 @@
-import { PAYMENT_PROVIDER_DOMAINS, PAYMENT_PROVIDER_NAMES } from "./payment-providers";
+import { PAYMENT_PROVIDER_DOMAINS, PAYMENT_PROVIDER_NAMES } from "./payment-providers.js";
 
 /**
  * Extract structured data from email headers and snippets.

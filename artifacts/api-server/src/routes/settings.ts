@@ -10,7 +10,7 @@ import {
   autoImportCandidatesTable,
 } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { requireAuth, getUserId } from "../lib/auth";
+import { requireAuth, getUserId } from "../lib/auth.js";
 
 const router = Router();
 
