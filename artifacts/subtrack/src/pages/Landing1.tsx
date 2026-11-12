@@ -121,9 +121,13 @@ function SectionDivider({ doodle = "dot" }: { doodle?: "dot" | "line" | "star" |
    NAVIGATION
    ═══════════════════════════════════════════════════════════════════════════ */
 
+//const GITHUB_URL = "https://github.com/MananAgrawal29/Traqqy";
+//const SIGN_UP = "/sign-up";
+//const SIGN_IN = "/sign-in";
 const GITHUB_URL = "https://github.com/MananAgrawal29/Traqqy";
-const SIGN_UP = "/sign-up";
-const SIGN_IN = "/sign-in";
+const SIGN_UP = "/waitlist";
+const SIGN_IN = "/waitlist";
+
 
 function Nav({ theme }: { theme: ReturnType<typeof useTheme> }) {
   const { scrollY } = useScroll();

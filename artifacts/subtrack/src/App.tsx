@@ -27,9 +27,10 @@ import Reminders from '@/pages/Reminders';
 import Settings from '@/pages/Settings';
 import Health from '@/pages/Health';
 import Shell from '@/components/layout/Shell';
+import WaitlistPage from "./components/WaitlistPage";  //temporariliy until domain is finalised
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-//const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
@@ -179,7 +180,7 @@ function Router() {
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
-      //proxyUrl={clerkProxyUrl}
+      proxyUrl={clerkProxyUrl}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
@@ -191,8 +192,10 @@ function Router() {
         <AuthTokenProvider />
         <Switch>
           <Route path="/" component={HomeRedirect} />
-          <Route path="/sign-in/*?" component={SignInPage} />
-          <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route path="/waitlist" component={WaitlistPage} />
+<Route path="/sign-in/*?" component={() => <Redirect to="/waitlist" />} />
+<Route path="/sign-up/*?" component={() => <Redirect to="/waitlist" />} />
+          
           
           <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
           <Route path="/subscriptions"><ProtectedRoute component={Subscriptions} /></Route>
